@@ -40,7 +40,7 @@
     <child link="l_hip_roll_link"/>
     <origin xyz="-0.015830 0.000000 -0.035400" rpy="0 0 0" />
     <axis xyz="-1 0 0" />
-    <limit effort="${45*9.80665/100}" velocity="${(pi/3)/0.18}" lower="${-pi*2/3}" upper="${pi*2/3}" />
+    <limit effort="${45*9.80665/100}" velocity="${(pi/3)/0.18}" lower="-2.0" upper="2.0" />
     <dynamics damping="0.1" friction="0.0" />
   </joint>
   <!-- <xacro:insert_transmission name="l_hip_roll" /> -->
@@ -70,7 +70,7 @@
     <child link="l_hip_pitch_link"/>
     <origin xyz="0.016330 0.025420 0.000000" rpy="0 0 0" />
     <axis xyz="0 1 0" />
-    <limit effort="${45*9.80665/100}" velocity="${(pi/3)/0.18}" lower="${-pi*2/3}" upper="${pi*2/3}" />
+    <limit effort="${45*9.80665/100}" velocity="${(pi/3)/0.18}" lower="-0.55" upper="${pi*2/3}" />
     <dynamics damping="0.1" friction="0.0" />
   </joint>
   <!-- <xacro:insert_transmission name="l_hip_pitch" /> -->
@@ -100,7 +100,7 @@
     <child link="l_knee_link"/>
     <origin xyz="0.000000 0.000000 -0.072100" rpy="0 0 0" />
     <axis xyz="0 1 0" />
-    <limit effort="${45*9.80665/100}" velocity="${(pi/3)/0.18}" lower="${-pi*2/3}" upper="${pi*2/3}" />
+    <limit effort="${45*9.80665/100}" velocity="${(pi/3)/0.18}" lower="${-pi*2/3}" upper="1.2" />
     <dynamics damping="0.1" friction="0.0" />
   </joint>
   <!-- <xacro:insert_transmission name="l_knee" /> -->
@@ -160,7 +160,7 @@
     <child link="l_ank_roll_link"/>
     <origin xyz="-0.016330 -0.025420 0.000000" rpy="0 0 0" />
     <axis xyz="1 0 0" />
-    <limit effort="${45*9.80665/100}" velocity="${(pi/3)/0.18}" lower="${-pi*2/3}" upper="${pi*2/3}" />
+    <limit effort="${45*9.80665/100}" velocity="${(pi/3)/0.18}" lower="-1.9" upper="1.9" />
     <dynamics damping="0.1" friction="0.0" />
   </joint>
   <!-- <xacro:insert_transmission name="l_ank_roll" /> -->

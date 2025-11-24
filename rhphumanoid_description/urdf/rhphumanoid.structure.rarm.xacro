@@ -38,9 +38,9 @@
   <joint name="r_sho_roll" type="revolute">
     <parent link="r_sho_pitch_link"/>
     <child link="r_sho_roll_link"/>
-    <origin xyz="0.025420 -0.037500 0.000000" rpy="0 0 0" />
+    <origin xyz="0.025420 -0.037500 0.000000" rpy="${-pi/2} 0 0" />
     <axis xyz="1 0 0" />
-    <limit effort="${45*9.80665/100}" velocity="${(pi/3)/0.18}" lower="${-pi*2/3}" upper="${pi*2/3}" />
+    <limit effort="${45*9.80665/100}" velocity="${(pi/3)/0.18}" lower="-1.8" upper="1.8" />
     <dynamics damping="0.1" friction="0.0" />
   </joint>
   <!-- <xacro:insert_transmission name="r_sho_roll" /> -->
@@ -100,7 +100,7 @@
     <child link="r_wst_link"/>
     <origin xyz="0.014000 0.023610 -0.032830" rpy="0 0 0" />
     <axis xyz="0 -1 0" />
-    <limit effort="${45*9.80665/100}" velocity="${(pi/3)/0.18}" lower="${-pi*2/3}" upper="${pi*2/3}" />
+    <limit effort="${45*9.80665/100}" velocity="${(pi/3)/0.18}" lower="${-pi/2}" upper="${pi*2/3}" />
     <dynamics damping="0.1" friction="0.0" />
   </joint>
   <!-- <xacro:insert_transmission name="r_4" /> -->
@@ -130,7 +130,7 @@
     <child link="r_grp_link"/>
     <origin xyz="0.015240 -0.035670 -0.043170" rpy="0 0 0" />
     <axis xyz="1 0 0" />
-    <limit effort="${45*9.80665/100}" velocity="${(pi/3)/0.18}" lower="${-pi*2/3}" upper="${pi*2/3}" />
+    <limit effort="${45*9.80665/100}" velocity="${(pi/3)/0.18}" lower="-0.5" upper="0.2" />
     <dynamics damping="0.1" friction="0.0" />
   </joint>
   <!-- <xacro:insert_transmission name="r_5" /> -->
