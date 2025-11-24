@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>rhphumanoid_description</name>
+  <version>0.0.0</version>
+  <description>
+    The rhphumanoid_description package
+  </description>
+  <license>TODO: License declaration</license>
+  <maintainer email="todo@todo.com">author</maintainer>
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <depend>joint_state_publisher</depend>
+  <depend>joint_state_publisher_gui</depend>
+  <depend>robot_state_publisher</depend>
+  <depend>rviz2</depend>
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

@@ -1,0 +1,283 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+
+  <!--
+  <xacro:property name="pi" value="3.141592654" />
+  -->
+
+  <!-- body link -->
+  <xacro:macro name="insert_mesh_body_link">
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <geometry>
+      <mesh filename="package://rhphumanoid_description/meshes/body.stl"  scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="Red">
+      <color rgba="1.00 0.22 0.24 1.0"/>
+    </material>
+  </xacro:macro>
+
+  <!-- right hip yaw link -->
+  <xacro:macro name="insert_mesh_r_hip_yaw_link">
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <geometry>
+      <mesh filename="package://rhphumanoid_description/meshes/rl1.stl"  scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="Orange">
+      <color rgba="1.00 0.55 0.16 1.0"/>
+    </material>
+  </xacro:macro>
+
+  <!-- right hip roll link -->
+  <xacro:macro name="insert_mesh_r_hip_roll_link">
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <geometry>
+      <mesh filename="package://rhphumanoid_description/meshes/rl2.stl"  scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="Yellow">
+      <color rgba="1.00 0.80 0.00 1.0"/>
+    </material>
+  </xacro:macro>
+
+  <!-- right hip pitch link -->
+  <xacro:macro name="insert_mesh_r_hip_pitch_link">
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <geometry>
+      <mesh filename="package://rhphumanoid_description/meshes/rl3.stl"  scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="Green">
+      <color rgba="0.20 0.78 0.35 1.0"/>
+    </material>
+  </xacro:macro>
+
+  <!-- right knee link -->
+  <xacro:macro name="insert_mesh_r_knee_link">
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <geometry>
+      <mesh filename="package://rhphumanoid_description/meshes/rl4.stl"  scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="Teal">
+      <color rgba="0.00 0.76 0.81 1.0"/>
+    </material>
+  </xacro:macro>
+
+  <!-- right ankle pitch link -->
+  <xacro:macro name="insert_mesh_r_ank_pitch_link">
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <geometry>
+      <mesh filename="package://rhphumanoid_description/meshes/rl5.stl"  scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="Blue">
+      <color rgba="0.00 0.53 0.91 1.0"/>
+    </material>
+  </xacro:macro>
+
+  <!-- right ankle roll link -->
+  <xacro:macro name="insert_mesh_r_ank_roll_link">
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <geometry>
+      <mesh filename="package://rhphumanoid_description/meshes/rl6.stl"  scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="Indigo">
+      <color rgba="0.38 0.33 0.96 1.0"/>
+    </material>
+  </xacro:macro>
+
+  <!-- left hip yaw link -->
+  <xacro:macro name="insert_mesh_l_hip_yaw_link">
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <geometry>
+      <mesh filename="package://rhphumanoid_description/meshes/ll1.stl"  scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="Orange">
+      <color rgba="1.00 0.55 0.16 1.0"/>
+    </material>
+  </xacro:macro>
+
+  <!-- left hip roll link -->
+  <xacro:macro name="insert_mesh_l_hip_roll_link">
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <geometry>
+      <mesh filename="package://rhphumanoid_description/meshes/ll2.stl"  scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="Yellow">
+      <color rgba="1.00 0.80 0.00 1.0"/>
+    </material>
+  </xacro:macro>
+
+  <!-- left hip pitch link -->
+  <xacro:macro name="insert_mesh_l_hip_pitch_link">
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <geometry>
+      <mesh filename="package://rhphumanoid_description/meshes/ll3.stl"  scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="Green">
+      <color rgba="0.20 0.78 0.35 1.0"/>
+    </material>
+  </xacro:macro>
+
+  <!-- left knee link -->
+  <xacro:macro name="insert_mesh_l_knee_link">
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <geometry>
+      <mesh filename="package://rhphumanoid_description/meshes/ll4.stl"  scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="Teal">
+      <color rgba="0.00 0.76 0.81 1.0"/>
+    </material>
+  </xacro:macro>
+
+  <!-- left ankle pitch link -->
+  <xacro:macro name="insert_mesh_l_ank_pitch_link">
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <geometry>
+      <mesh filename="package://rhphumanoid_description/meshes/ll5.stl"  scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="Blue">
+      <color rgba="0.00 0.53 0.91 1.0"/>
+    </material>
+  </xacro:macro>
+
+  <!-- left ankle roll link -->
+  <xacro:macro name="insert_mesh_l_ank_roll_link">
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <geometry>
+      <mesh filename="package://rhphumanoid_description/meshes/ll6.stl"  scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="Indigo">
+      <color rgba="0.38 0.33 0.96 1.0"/>
+    </material>
+  </xacro:macro>
+
+  <!-- right shoulder pitch joint -->
+  <xacro:macro name="insert_mesh_r_sho_pitch_link">
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <geometry>
+      <mesh filename="package://rhphumanoid_description/meshes/ra1.stl"  scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="Orange">
+      <color rgba="1.00 0.55 0.16 1.0"/>
+    </material>
+  </xacro:macro>
+
+  <!-- right shoulder roll joint -->
+  <xacro:macro name="insert_mesh_r_sho_roll_link">
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <geometry>
+      <mesh filename="package://rhphumanoid_description/meshes/ra2.stl"  scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="Yellow">
+      <color rgba="1.00 0.80 0.00 1.0"/>
+    </material>
+  </xacro:macro>
+
+  <!-- right elbow joint -->
+  <xacro:macro name="insert_mesh_r_el_link">
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <geometry>
+      <mesh filename="package://rhphumanoid_description/meshes/ra3.stl"  scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="Green">
+      <color rgba="0.20 0.78 0.35 1.0"/>
+    </material>
+  </xacro:macro>
+
+  <!-- right wrist joint -->
+  <xacro:macro name="insert_mesh_r_wst_link">
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <geometry>
+      <mesh filename="package://rhphumanoid_description/meshes/ra4.stl"  scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="Teal">
+      <color rgba="0.00 0.76 0.81 1.0"/>
+    </material>
+  </xacro:macro>
+
+  <!-- right gripper joint -->
+  <xacro:macro name="insert_mesh_r_grp_link">
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <geometry>
+      <mesh filename="package://rhphumanoid_description/meshes/ra5.stl"  scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="Blue">
+      <color rgba="0.00 0.53 0.91 1.0"/>
+    </material>
+  </xacro:macro>
+
+  <!-- left shoulder pitch joint -->
+  <xacro:macro name="insert_mesh_l_sho_pitch_link">
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <geometry>
+      <mesh filename="package://rhphumanoid_description/meshes/la1.stl"  scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="Orange">
+      <color rgba="1.00 0.55 0.16 1.0"/>
+    </material>
+  </xacro:macro>
+
+  <!-- left shoulder roll joint -->
+  <xacro:macro name="insert_mesh_l_sho_roll_link">
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <geometry>
+      <mesh filename="package://rhphumanoid_description/meshes/la2.stl"  scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="Yellow">
+      <color rgba="1.00 0.80 0.00 1.0"/>
+    </material>
+  </xacro:macro>
+
+  <!-- left elbow joint -->
+  <xacro:macro name="insert_mesh_l_el_link">
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <geometry>
+      <mesh filename="package://rhphumanoid_description/meshes/la3.stl"  scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="Green">
+      <color rgba="0.20 0.78 0.35 1.0"/>
+    </material>
+  </xacro:macro>
+
+  <!-- left wrist joint -->
+  <xacro:macro name="insert_mesh_l_wst_link">
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <geometry>
+      <mesh filename="package://rhphumanoid_description/meshes/la4.stl"  scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="Teal">
+      <color rgba="0.00 0.76 0.81 1.0"/>
+    </material>
+  </xacro:macro>
+
+  <!-- left gripper joint -->
+  <xacro:macro name="insert_mesh_l_grp_link">
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <geometry>
+      <mesh filename="package://rhphumanoid_description/meshes/la5.stl"  scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="Blue">
+      <color rgba="0.00 0.53 0.91 1.0"/>
+    </material>
+  </xacro:macro>
+
+  <!-- head yaw joint -->
+  <!-- <xacro:macro name="insert_mesh_head_pan_link">
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <geometry>
+      <mesh filename="package://rhphumanoid_description/meshes/h1.stl"  scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="Grey">
+      <color rgba="0.60 0.60 0.60 1.0"/>
+    </material>
+  </xacro:macro> -->
+
+  <!-- head yaw joint -->
+  <!-- <xacro:macro name="insert_mesh_head_tilt_link">
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <geometry>
+      <mesh filename="package://rhphumanoid_description/meshes/h2.stl"  scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="Grey">
+      <color rgba="0.60 0.60 0.60 1.0"/>
+    </material>
+  </xacro:macro> -->
+
+</robot>

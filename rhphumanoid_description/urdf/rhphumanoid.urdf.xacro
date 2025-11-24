@@ -1,0 +1,49 @@
+<?xml version="1.0" ?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro" name="rhphumanoid">
+
+  <xacro:include filename="$(find rhphumanoid_description)/urdf/rhphumanoid.visuals.xacro" />
+  <xacro:include filename="$(find rhphumanoid_description)/urdf/rhphumanoid.inertia.xacro" />
+
+  <xacro:include filename="$(find rhphumanoid_description)/urdf/rhphumanoid.structure.rarm.xacro" />
+  <xacro:include filename="$(find rhphumanoid_description)/urdf/rhphumanoid.structure.larm.xacro" />
+
+  <xacro:include filename="$(find rhphumanoid_description)/urdf/rhphumanoid.structure.rleg.xacro" />
+  <xacro:include filename="$(find rhphumanoid_description)/urdf/rhphumanoid.structure.lleg.xacro" />
+
+  <!-- <xacro:include filename="$(find rhphumanoid_description)/urdf/rhphumanoid.structure.head.xacro" /> -->
+
+  <!-- <xacro:include filename="$(find rhphumanoid_description)/urdf/rhphumanoid.ros2.gazebo.xacro" /> -->
+
+  <!-- body link -->
+  <link name="body_link"> 
+    <visual> 
+      <xacro:insert_mesh_body_link />
+    </visual>
+    <collision>
+      <xacro:insert_mesh_body_link />
+    </collision>
+    <!-- <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="0 0 0"/>
+      </geometry>
+    </collision> -->
+    <inertial> 
+      <xacro:insert_inertia_body_link />
+    </inertial> 
+  </link>
+
+  <!-- arm link -->  
+  <xacro:rhphumanoid_r_arm parent="body_link" />
+  <xacro:rhphumanoid_l_arm parent="body_link" />
+
+  <!-- leg link -->
+  <xacro:rhphumanoid_r_leg parent="body_link" />
+  <xacro:rhphumanoid_l_leg parent="body_link" />
+
+  <!-- head links -->
+  <!-- <xacro:rhphumanoid_head parent="body_link" />   -->
+
+  <!-- <xacro:rhphumanoid_gazebo/> -->
+
+</robot>
