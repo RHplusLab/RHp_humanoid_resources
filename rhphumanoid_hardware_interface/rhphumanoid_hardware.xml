@@ -1,0 +1,9 @@
+<library path="rhphumanoid_hardware_interface">
+  <class name="rhphumanoid_hardware/RHPHumanoidSystemHardware"
+         type="rhphumanoid_hardware::RHPHumanoidSystemHardware"
+         base_class_type="hardware_interface::SystemInterface">
+    <description>
+      ROS2 control for RHPHumanoid.
+    </description>
+  </class>
+</library>
