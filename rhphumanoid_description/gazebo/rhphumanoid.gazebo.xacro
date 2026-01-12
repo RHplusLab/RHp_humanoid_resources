@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+
+  <xacro:macro name="rhphumanoid_gazebo">
+
+    <gazebo>
+      <plugin filename="libgz_ros2_control-system.so"
+              name="gz_ros2_control::GazeboSimROS2ControlPlugin">
+        <parameters>$(find rhphumanoid_description)/config/rhphumanoid_controllers.yaml</parameters>
+      </plugin>
+    </gazebo>
+
+  </xacro:macro>
+
+</robot>
