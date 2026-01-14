@@ -1,0 +1,9 @@
+<library path="rhptwo_hardware_interface">
+  <class name="rhptwo_hardware/RHPTwoSystemHardware"
+         type="rhptwo_hardware::RHPTwoSystemHardware"
+         base_class_type="hardware_interface::SystemInterface">
+    <description>
+      ROS2 control for RHPTwo.
+    </description>
+  </class>
+</library>
