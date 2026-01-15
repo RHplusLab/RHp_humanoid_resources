@@ -22,10 +22,10 @@ class RHPTwoSystemHardware : public hardware_interface::SystemInterface
 public:
   RCLCPP_SHARED_PTR_DEFINITIONS(RHPTwoSystemHardware)
 
-  // [수정] 매크로 이름을 visibility_control.hpp에 정의된 것과 일치시킴
+  // [수정] Humble 호환을 위해 HardwareInfo 사용
   RHPTWO_HARDWARE_INTERFACE_PUBLIC
   hardware_interface::CallbackReturn on_init(
-    const hardware_interface::HardwareComponentInterfaceParams & params) override;
+    const hardware_interface::HardwareInfo & info) override;
 
   RHPTWO_HARDWARE_INTERFACE_PUBLIC
   std::vector<hardware_interface::StateInterface> export_state_interfaces() override;
@@ -70,3 +70,4 @@ private:
 }  // namespace rhptwo_hardware
 
 #endif  // RHPTWO_SYSTEM__HPP
+
