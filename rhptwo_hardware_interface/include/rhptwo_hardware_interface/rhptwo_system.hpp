@@ -1,23 +1,10 @@
-// Copyright 2020 ros2_control Development Team
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
-#ifndef RHPTWO_HARDWARE_INTERFACE__RHPTWO_SYSTEM_HPP_
-#define RHPTWO_HARDWARE_INTERFACE__RHPTWO_SYSTEM_HPP_
+#ifndef RHPTWO_SYSTEM__HPP
+#define RHPTWO_SYSTEM__HPP
 
 #include <memory>
 #include <string>
 #include <vector>
+#include <map>
 
 #include "hardware_interface/handle.hpp"
 #include "hardware_interface/hardware_info.hpp"
@@ -25,18 +12,20 @@
 #include "hardware_interface/types/hardware_interface_return_values.hpp"
 #include "rclcpp/macros.hpp"
 #include "rhptwo_hardware_interface/visibility_control.hpp"
-#include "rhptwo.hpp"
+
+#include "rhptwo_hardware_interface/rhptwo.hpp"
 
 namespace rhptwo_hardware
 {
-class RHPTwoSystemHardware
-: public hardware_interface::SystemInterface
+class RHPTwoSystemHardware : public hardware_interface::SystemInterface
 {
 public:
-  RCLCPP_SHARED_PTR_DEFINITIONS(RHPTwoSystemHardware);
+  RCLCPP_SHARED_PTR_DEFINITIONS(RHPTwoSystemHardware)
 
+  // [수정] 매크로 이름을 visibility_control.hpp에 정의된 것과 일치시킴
   RHPTWO_HARDWARE_INTERFACE_PUBLIC
-  CallbackReturn on_init(const hardware_interface::HardwareInfo & info) override;
+  hardware_interface::CallbackReturn on_init(
+    const hardware_interface::HardwareComponentInterfaceParams & params) override;
 
   RHPTWO_HARDWARE_INTERFACE_PUBLIC
   std::vector<hardware_interface::StateInterface> export_state_interfaces() override;
@@ -45,34 +34,39 @@ public:
   std::vector<hardware_interface::CommandInterface> export_command_interfaces() override;
 
   RHPTWO_HARDWARE_INTERFACE_PUBLIC
-  CallbackReturn on_activate(const rclcpp_lifecycle::State & previous_state) override;
+  hardware_interface::CallbackReturn on_activate(
+    const rclcpp_lifecycle::State & previous_state) override;
 
   RHPTWO_HARDWARE_INTERFACE_PUBLIC
-  CallbackReturn on_deactivate(const rclcpp_lifecycle::State & previous_state) override;
+  hardware_interface::CallbackReturn on_deactivate(
+    const rclcpp_lifecycle::State & previous_state) override;
 
   RHPTWO_HARDWARE_INTERFACE_PUBLIC
-  hardware_interface::return_type read(const rclcpp::Time & time, const rclcpp::Duration & period) override;
+  hardware_interface::return_type read(
+    const rclcpp::Time & time, const rclcpp::Duration & period) override;
 
   RHPTWO_HARDWARE_INTERFACE_PUBLIC
-  hardware_interface::return_type write(const rclcpp::Time & time, const rclcpp::Duration & period) override;
+  hardware_interface::return_type write(
+    const rclcpp::Time & time, const rclcpp::Duration & period) override;
 
 private:
   // Parameters for the RHPTwo simulation
   double hw_start_sec_;
   double hw_stop_sec_;
   double hw_slowdown_;
-  double joint_initial_value[7];
 
   // Store the command for the simulated robot
   std::vector<double> hw_commands_;
   std::vector<double> hw_commands_last_;
-
   std::vector<double> hw_states_;
   std::vector<std::string> hw_joint_name_;
+
+  // 초기값 저장을 위한 map
+  std::map<int, double> joint_initial_value;
 
   rhptwo::rhptwo rhptwo;
 };
 
 }  // namespace rhptwo_hardware
 
-#endif  // RHPTWO_HARDWARE_INTERFACE__RHPTWO_SYSTEM_HPP_
+#endif  // RHPTWO_SYSTEM__HPP

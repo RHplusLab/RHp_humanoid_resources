@@ -1,10 +1,6 @@
-
 #ifndef RHPTWO_SERIAL__H
 #define RHPTWO_SERIAL__H
-#include <hidapi/hidapi.h>
-#include <sstream>
 #include <vector>
-
 #include "rhptwo_drvr.hpp"
 
 namespace rhptwo
@@ -20,6 +16,10 @@ namespace rhptwo
 
 			bool getJointPosition(int id, uint16_t &pos) override;
 			bool setJointPosition(int id, uint16_t pos, uint16_t time) override;
+
+            // [추가] 오버라이드 선언
+            bool setMultiJointPositions(const std::vector<uint8_t> &ids, const std::vector<uint16_t> &positions, uint16_t time) override;
+
 			bool setManualModeAll(bool enable, int count) override;
 
 		private:

@@ -27,14 +27,17 @@
 
 namespace rhptwo_hardware
 {
-  hardware_interface::CallbackReturn RHPTwoSystemHardware::on_init(const hardware_interface::HardwareInfo & info)
+  // [수정] 인자 타입 변경 (HardwareInfo -> HardwareComponentInterfaceParams)
+  hardware_interface::CallbackReturn RHPTwoSystemHardware::on_init(
+    const hardware_interface::HardwareComponentInterfaceParams & params)
   {
-   if (hardware_interface::SystemInterface::on_init(info) != hardware_interface::CallbackReturn::SUCCESS)
+   // [수정] 부모 클래스 초기화도 params로 호출
+   if (hardware_interface::SystemInterface::on_init(params) != hardware_interface::CallbackReturn::SUCCESS)
    {
      return hardware_interface::CallbackReturn::ERROR;
    }
 
-
+  // 이후 코드는 info_ 를 그대로 사용하면 됩니다. (부모 클래스가 세팅해줌)
   RCLCPP_INFO(rclcpp::get_logger("RHPTwoSystemHardware"), "Number of joints= %ld", info_.joints.size());
 
   // 1. 파라미터가 존재하는지 확인하고, 없으면 기본값 0.0 또는 1.0을 사용
@@ -53,7 +56,7 @@ namespace rhptwo_hardware
   if (info_.hardware_parameters.count("example_param_hw_slowdown")) {
     hw_slowdown_ = stod(info_.hardware_parameters.at("example_param_hw_slowdown"));
   } else {
-    hw_slowdown_ = 10.0; // 기본값 (0으로 나누기 방지 등을 위해 적절한 값 설정)
+    hw_slowdown_ = 10.0; // 기본값
   }
 
   // 2. Initial Value도 비어있을 수 있으므로 예외 처리 추가
@@ -72,7 +75,6 @@ namespace rhptwo_hardware
 
   for (const hardware_interface::ComponentInfo & joint : info_.joints)
   {
-    // RHPTwoSystem has exactly one state and command interface on each joint
     if (joint.command_interfaces.size() != 1)
     {
       RCLCPP_FATAL(
@@ -203,9 +205,9 @@ hardware_interface::return_type RHPTwoSystemHardware::read(const rclcpp::Time & 
 	  if (hw_states_[i] != positions[i])
 	  {
 		  hw_states_[i] = positions[i];
-		  RCLCPP_DEBUG(
-			  rclcpp::get_logger("RHPTwoSystemHardware"), "New state %.5f for joint %s (%d)",
-			  hw_states_[i], hw_joint_name_[i].c_str(), i);
+		  // RCLCPP_DEBUG(
+		  //	  rclcpp::get_logger("RHPTwoSystemHardware"), "New state %.5f for joint %s (%d)",
+		  //	  hw_states_[i], hw_joint_name_[i].c_str(), i);
 	  }
   }
   return hardware_interface::return_type::OK;
@@ -223,11 +225,8 @@ hardware_interface::return_type RHPTwoSystemHardware::write(const rclcpp::Time &
 #else
 hardware_interface::return_type RHPTwoSystemHardware::read(const rclcpp::Time & time, const rclcpp::Duration & period)
 {
-  //RCLCPP_INFO(rclcpp::get_logger("RHPTwoSystemHardware"), "Reading...");
-
   for (uint i = 0; i < hw_states_.size(); i++)
   {
-		//hw_states_[i] = hw_states_[i] + (hw_commands_[i] - hw_states_[i]) / hw_slowdown_;
 		double new_state = hw_states_[i] + (hw_commands_[i] - hw_states_[i]) / hw_slowdown_;
 	    if ( new_state != hw_states_[i]) {
 	    	hw_states_[i] = new_state;
@@ -236,26 +235,20 @@ hardware_interface::return_type RHPTwoSystemHardware::read(const rclcpp::Time & 
 			  hw_states_[i], i);
 	    }
 	  }
-	//  RCLCPP_INFO(rclcpp::get_logger("RRBotSystemPositionOnlyHardware"), "Joints successfully read!");
 
   return hardware_interface::return_type::OK;
 }
 
 hardware_interface::return_type RHPTwoSystemHardware::write(const rclcpp::Time & time, const rclcpp::Duration & period)
 {
-  //RCLCPP_INFO(rclcpp::get_logger("RHPTwoSystemHardware"), "Writing...");
-
   for (uint i = 0; i < hw_commands_.size(); i++)
   {
 	  if (hw_states_[i] != hw_commands_[i]) {
-		// Simulate sending commands to the hardware
 		RCLCPP_INFO(
 		  rclcpp::get_logger("RRBotSystemPositionOnlyHardware"), "New command %.5f for joint %d",
 		  hw_commands_[i], i);
 	  }
   }
-//  RCLCPP_INFO(
-//    rclcpp::get_logger("RRBotSystemPositionOnlyHardware"), "Joints successfully written!");
 
   return hardware_interface::return_type::OK;
 }

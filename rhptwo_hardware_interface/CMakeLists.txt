@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.8)
 project(rhptwo_hardware_interface)
 
 # Default to C++14
@@ -45,17 +45,29 @@ ament_target_dependencies(
 
 target_link_libraries(${PROJECT_NAME} PkgConfig::hidapi-hidraw)
 
+# 플러그인 설명 파일 내보내기
 pluginlib_export_plugin_description_file(hardware_interface rhptwo_hardware.xml)
 
 # INSTALL
+
+# 1. 라이브러리 파일 설치 (표준 경로인 lib 로 변경)
 install(
   TARGETS ${PROJECT_NAME}
-  DESTINATION lib/${PROJECT_NAME}
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
 )
 
+# 2. 헤더 파일 설치
 install(
   DIRECTORY include/
-  DESTINATION include/${PROJECT_NAME}
+  DESTINATION include
+)
+
+# 3. [중요] 플러그인 XML 파일 설치 (이게 없으면 실행 시 에러 발생)
+install(
+  FILES rhptwo_hardware.xml
+  DESTINATION share/${PROJECT_NAME}
 )
 
 if(BUILD_TESTING)
