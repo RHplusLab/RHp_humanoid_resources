@@ -2,7 +2,7 @@
 <robot xmlns:xacro="http://ros.org/wiki/xacro">
 
   <!-- head -->
-  <xacro:macro name="robotis_op3_head" params="parent">
+  <xacro:macro name="rhphumanoid_head" params="parent">
 
   <!-- head yaw joint -->
   <joint name="head_pan" type="revolute">
@@ -65,7 +65,7 @@
   </link>
 
   <!-- camera joint -->
-  <joint name="cam" type="fixed">
+  <!-- <joint name="cam" type="fixed">
     <origin xyz="0.01425 -0.019 0.04975" rpy="${-pi*0.5} 0 ${-pi*0.5}"/>
     <parent link="head_tilt_link"/>
     <child link="cam_link"/>
@@ -75,15 +75,15 @@
     <origin xyz="0.01425 -0.019 0.04975" rpy="0 0 0"/>
     <parent link="head_tilt_link"/>
     <child link="cam_gazebo_link"/>
-  </joint>
+  </joint> -->
 
   <!-- camera link -->
-  <link name="cam_link">
-  </link>
+  <!-- <link name="cam_link">
+  </link> -->
 
   <!-- camera link -->
-  <link name="cam_gazebo_link">
-  </link>
+  <!-- <link name="cam_gazebo_link">
+  </link> -->
 
   </xacro:macro>
 

@@ -209,21 +209,21 @@
   </xacro:macro>
 
   <!-- head yaw joint -->
-  <!-- <xacro:macro name="insert_inertia_head_pan_link">
+  <xacro:macro name="insert_inertia_head_pan_link">
     <origin xyz="0.00233 0.00000 0.00823" />
     <mass value="0.01176"/>
     <inertia ixx="0.00000397" ixy="0.0" ixz="-0.00000031"
              iyy="0.00000165" iyz="0.0"
              izz="0.00000387" />
-  </xacro:macro> -->
+  </xacro:macro>
 
   <!-- head pitch joint -->
-  <!-- <xacro:macro name="insert_inertia_head_tilt_link">
+  <xacro:macro name="insert_inertia_head_tilt_link">
     <origin xyz="0.00230 -0.01863 0.02770" />
     <mass value="0.13631"/>
     <inertia ixx="0.00010612" ixy="0.00000011" ixz="-0.00000910"
              iyy="0.00008721" iyz="0.00000084"
              izz="0.00004529" />
-  </xacro:macro> -->
+  </xacro:macro>
 
 </robot>

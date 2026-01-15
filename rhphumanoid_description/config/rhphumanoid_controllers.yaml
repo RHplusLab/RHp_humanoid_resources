@@ -33,4 +33,6 @@ forward_position_controller:
       - r_knee
       - r_ank_pitch
       - r_ank_roll
+      - head_pan
+      - head_tilt
     interface_name: position

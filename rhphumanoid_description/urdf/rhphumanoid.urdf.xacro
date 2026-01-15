@@ -12,7 +12,7 @@
   <xacro:include filename="$(find rhphumanoid_description)/urdf/rhphumanoid.structure.rleg.xacro" />
   <xacro:include filename="$(find rhphumanoid_description)/urdf/rhphumanoid.structure.lleg.xacro" />
 
-  <!-- <xacro:include filename="$(find rhphumanoid_description)/urdf/rhphumanoid.structure.head.xacro" /> -->
+  <xacro:include filename="$(find rhphumanoid_description)/urdf/rhphumanoid.structure.head.xacro" />
 
   <!-- <xacro:include filename="$(find rhphumanoid_description)/urdf/rhphumanoid.ros2.gazebo.xacro" /> -->
   <xacro:include filename="$(find rhphumanoid_description)/ros2_control/rhphumanoid.ros2_control.xacro" />
@@ -47,7 +47,7 @@
 
 
   <!-- head links -->
-  <!-- <xacro:rhphumanoid_head parent="body_link" />   -->
+  <xacro:rhphumanoid_head parent="body_link" />  
 
   <xacro:if value="$(arg use_gazebo)">
     <xacro:include filename="$(find rhphumanoid_description)/gazebo/rhphumanoid.gazebo.xacro" />

@@ -131,6 +131,18 @@
         <state_interface name="velocity"/>
       </joint>
 
+      <!-- ==================== Head ==================== -->
+      <joint name="head_pan">
+        <command_interface name="position"/>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+      </joint>
+      <joint name="head_tilt">
+        <command_interface name="position"/>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+      </joint>
+
     </ros2_control>
 
   </xacro:macro>

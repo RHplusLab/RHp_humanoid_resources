@@ -259,25 +259,25 @@
   </xacro:macro>
 
   <!-- head yaw joint -->
-  <!-- <xacro:macro name="insert_mesh_head_pan_link">
+  <xacro:macro name="insert_mesh_head_pan_link">
     <origin xyz="0 0 0" rpy="0 0 0" />
     <geometry>
-      <mesh filename="package://rhphumanoid_description/meshes/h1.stl"  scale="0.001 0.001 0.001"/>
+      <mesh filename="package://rhphumanoid_description/meshes/la1.stl"  scale="0.001 0.001 0.001"/>
     </geometry>
     <material name="Grey">
       <color rgba="0.60 0.60 0.60 1.0"/>
     </material>
-  </xacro:macro> -->
+  </xacro:macro>
 
   <!-- head yaw joint -->
-  <!-- <xacro:macro name="insert_mesh_head_tilt_link">
+  <xacro:macro name="insert_mesh_head_tilt_link">
     <origin xyz="0 0 0" rpy="0 0 0" />
     <geometry>
-      <mesh filename="package://rhphumanoid_description/meshes/h2.stl"  scale="0.001 0.001 0.001"/>
+      <mesh filename="package://rhphumanoid_description/meshes/la1.stl"  scale="0.001 0.001 0.001"/>
     </geometry>
     <material name="Grey">
       <color rgba="0.60 0.60 0.60 1.0"/>
     </material>
-  </xacro:macro> -->
+  </xacro:macro>
 
 </robot>
