@@ -1,7 +1,5 @@
-// Serial servo bus control for LewanSoul/Hiwonder servos
-//
-// Based on Arduino source code provided by HiWonder
-//
+// Serial servo bus control for Bus Servo Controller v1.0
+// Modified to match the "Bus Servo Controller Communication Protocol"
 
 #include <iostream>
 #include <cstdint>
@@ -10,58 +8,15 @@
 #include <string.h>
 #include <termios.h>
 #include <unistd.h>
+#include <vector>
 
 #include "rhphumanoid_hardware_interface/serial_servo_bus.hpp"
 
 #define GET_LOW_uint8_t(A) (uint8_t)((A))
-// Macro function  get lower 8 bits of A
 #define GET_HIGH_uint8_t(A) (uint8_t)((A) >> 8)
-// Macro function  get higher 8 bits of A
 #define uint8_t_TO_HW(A, B) ((((uint16_t)(A)) << 8) | (uint8_t)(B))
-// put A as higher 8 bits   B as lower 8 bits   which amalgamated into 16 bits
-// integer
 
-#define LOBOT_SERVO_FRAME_HEADER 0x55
-#define LOBOT_SERVO_MOVE_TIME_WRITE 1
-#define LOBOT_SERVO_MOVE_TIME_READ 2
-#define LOBOT_SERVO_MOVE_TIME_WAIT_WRITE 7
-#define LOBOT_SERVO_MOVE_TIME_WAIT_READ 8
-#define LOBOT_SERVO_MOVE_START 11
-#define LOBOT_SERVO_MOVE_STOP 12
-#define LOBOT_SERVO_ID_WRITE 13
-#define LOBOT_SERVO_ID_READ 14
-#define LOBOT_SERVO_ANGLE_OFFSET_ADJUST 17
-#define LOBOT_SERVO_ANGLE_OFFSET_WRITE 18
-#define LOBOT_SERVO_ANGLE_OFFSET_READ 19
-#define LOBOT_SERVO_ANGLE_LIMIT_WRITE 20
-#define LOBOT_SERVO_ANGLE_LIMIT_READ 21
-#define LOBOT_SERVO_VIN_LIMIT_WRITE 22
-#define LOBOT_SERVO_VIN_LIMIT_READ 23
-#define LOBOT_SERVO_TEMP_MAX_LIMIT_WRITE 24
-#define LOBOT_SERVO_TEMP_MAX_LIMIT_READ 25
-#define LOBOT_SERVO_TEMP_READ 26
-#define LOBOT_SERVO_VIN_READ 27
-#define LOBOT_SERVO_POS_READ 28
-#define LOBOT_SERVO_OR_MOTOR_MODE_WRITE 29
-#define LOBOT_SERVO_OR_MOTOR_MODE_READ 30
-#define LOBOT_SERVO_LOAD_OR_UNLOAD_WRITE 31
-#define LOBOT_SERVO_LOAD_OR_UNLOAD_READ 32
-#define LOBOT_SERVO_LED_CTRL_WRITE 33
-#define LOBOT_SERVO_LED_CTRL_READ 34
-#define LOBOT_SERVO_LED_ERROR_WRITE 35
-#define LOBOT_SERVO_LED_ERROR_READ 36
-
-static uint8_t LobotCheckSum(uint8_t buf[]) {
-  uint8_t i;
-  uint16_t temp = 0;
-  for (i = 2; i < buf[3] + 2; i++) {
-    temp += buf[i];
-  }
-  temp = ~temp;
-  i = (uint8_t)temp;
-  return i;
-}
-
+// Write helper
 static bool writeMsg(int fd, const uint8_t *buf, int len) {
   if (len != write(fd, buf, len)) {
     return false;
@@ -70,174 +25,138 @@ static bool writeMsg(int fd, const uint8_t *buf, int len) {
   return true;
 }
 
+// Bulk Write 구현 (여러 모터 동시 제어)
+// Packet: Header(2) + Length(1) + Cmd(1) + Count(1) + Time(2) + [ID(1) + Pos(2)]...
+bool LobotSerialServoMoveBulk(int fd, const std::vector<uint8_t> &ids, const std::vector<uint16_t> &positions, uint16_t time) {
+  if (ids.empty() || ids.size() != positions.size()) {
+    return false;
+  }
+
+  int count = ids.size();
+  if (count > 255) count = 255; // 1바이트 제한
+
+  // 패킷 길이 계산
+  // Length = Cmd(1) + Count(1) + Time(2) + (ID(1) + Pos(2)) * N
+  //        = 4 + 3*N
+  // Total Length = Header(2) + Length(1) + Cmd(1) + Count(1) + Time(2) + ...
+  // 문서상 Data Length 필드 값 = 파라미터 수 + 2 (Cmd+Len자신?) -> 아니면 그냥 파라미터+1(Cmd)?
+  // 문서 2.1 "Data Length: N + 2" (N=파라미터 개수, 2=Cmd+Length자체)
+  // 파라미터 구성: Count(1) + Time(2) + [ID(1)+Pos(2)]*Count
+  // 파라미터 바이트 수 N = 3 + 3*Count
+  // 따라서 Length 필드 값 = (3 + 3*Count) + 2 = 5 + 3*Count
+
+  int dataLenField = 5 + (3 * count);
+  int totalPacketLen = 2 + dataLenField; // Header(2) + 나머지
+
+  std::vector<uint8_t> buf(totalPacketLen);
+
+  buf[0] = LOBOT_SERVO_FRAME_HEADER;
+  buf[1] = LOBOT_SERVO_FRAME_HEADER;
+  buf[2] = dataLenField;
+  buf[3] = CMD_SERVO_MOVE;
+  buf[4] = count;
+  buf[5] = GET_LOW_uint8_t(time);
+  buf[6] = GET_HIGH_uint8_t(time);
+
+  for (int i = 0; i < count; i++) {
+    int idx = 7 + (i * 3);
+    buf[idx] = ids[i];
+    buf[idx+1] = GET_LOW_uint8_t(positions[i]);
+    buf[idx+2] = GET_HIGH_uint8_t(positions[i]);
+  }
+
+  return writeMsg(fd, buf.data(), totalPacketLen);
+}
+
+// CMD_SERVO_MOVE (0x03) - 단일 제어
 bool LobotSerialServoMove(int fd, uint8_t id, int16_t position, uint16_t time) {
   const int msgLen = 10;
   uint8_t buf[msgLen];
-  if (position < 0) {
-    position = 0;
-  }
-  if (position > 1000) {
-    position = 1000;
-  }
-  buf[0] = buf[1] = LOBOT_SERVO_FRAME_HEADER;
-  buf[2] = id;
-  buf[3] = msgLen - 3;
-  buf[4] = LOBOT_SERVO_MOVE_TIME_WRITE;
-  buf[5] = GET_LOW_uint8_t(position);
-  buf[6] = GET_HIGH_uint8_t(position);
-  buf[7] = GET_LOW_uint8_t(time);
-  buf[8] = GET_HIGH_uint8_t(time);
-  buf[9] = LobotCheckSum(buf);
+
+  if (position < 0) position = 0;
+  if (position > 1000) position = 1000;
+
+  buf[0] = LOBOT_SERVO_FRAME_HEADER;
+  buf[1] = LOBOT_SERVO_FRAME_HEADER;
+  buf[2] = 8;                       // Length
+  buf[3] = CMD_SERVO_MOVE;          // 0x03
+  buf[4] = 1;                       // Count
+  buf[5] = GET_LOW_uint8_t(time);   // Time LSB
+  buf[6] = GET_HIGH_uint8_t(time);  // Time MSB
+  buf[7] = id;                      // Servo ID
+  buf[8] = GET_LOW_uint8_t(position);// Position LSB
+  buf[9] = GET_HIGH_uint8_t(position);// Position MSB
+
   return writeMsg(fd, buf, msgLen);
 }
 
-bool LobotSerialServoStopMove(int fd, uint8_t id) {
-  const int msgLen = 6;
-  uint8_t buf[msgLen];
-  buf[0] = buf[1] = LOBOT_SERVO_FRAME_HEADER;
-  buf[2] = id;
-  buf[3] = msgLen - 3;
-  buf[4] = LOBOT_SERVO_MOVE_STOP;
-  buf[5] = LobotCheckSum(buf);
-  return writeMsg(fd, buf, msgLen);
-}
-
-bool LobotSerialServoSetID(int fd, uint8_t oldID, uint8_t newID) {
-  const int msgLen = 7;
-  uint8_t buf[msgLen];
-  buf[0] = buf[1] = LOBOT_SERVO_FRAME_HEADER;
-  buf[2] = oldID;
-  buf[3] = msgLen - 3;
-  buf[4] = LOBOT_SERVO_ID_WRITE;
-  buf[5] = newID;
-  buf[6] = LobotCheckSum(buf);
-  return writeMsg(fd, buf, msgLen);
-}
-
-bool LobotSerialServoSetMode(int fd, uint8_t id, uint8_t Mode, int16_t Speed) {
-  const int msgLen = 10;
-  uint8_t buf[msgLen];
-  buf[0] = buf[1] = LOBOT_SERVO_FRAME_HEADER;
-  buf[2] = id;
-  buf[3] = msgLen - 3;
-  buf[4] = LOBOT_SERVO_OR_MOTOR_MODE_WRITE;
-  buf[5] = Mode;
-  buf[6] = 0;
-  buf[7] = GET_LOW_uint8_t((uint16_t)Speed);
-  buf[8] = GET_HIGH_uint8_t((uint16_t)Speed);
-  buf[9] = LobotCheckSum(buf);
-  return writeMsg(fd, buf, msgLen);
-}
-
-// Doesn't work
-bool LobotSerialServoLoad(int fd, uint8_t id) {
-  const int msgLen = 7;
-  uint8_t buf[msgLen];
-  buf[0] = buf[1] = LOBOT_SERVO_FRAME_HEADER;
-  buf[2] = id;
-  buf[3] = msgLen - 3;
-  buf[4] = LOBOT_SERVO_LOAD_OR_UNLOAD_WRITE;
-  buf[5] = 1;
-  buf[6] = LobotCheckSum(buf);
-  //std::cerr << "load" << std::endl;
-  return writeMsg(fd, buf, msgLen);
-}
-
-// Doesn't work
+// CMD_MULT_SERVO_UNLOAD (0x14)
 bool LobotSerialServoUnload(int fd, uint8_t id) {
-  const int msgLen = 7;
+  const int msgLen = 6;
   uint8_t buf[msgLen];
-  buf[0] = buf[1] = LOBOT_SERVO_FRAME_HEADER;
-  buf[2] = id;
-  buf[3] = msgLen - 3;
-  buf[4] = LOBOT_SERVO_LOAD_OR_UNLOAD_WRITE;
-  buf[5] = 0;
-  buf[6] = LobotCheckSum(buf);
 
-  //std::cerr << "unload" << std::endl;
+  buf[0] = LOBOT_SERVO_FRAME_HEADER;
+  buf[1] = LOBOT_SERVO_FRAME_HEADER;
+  buf[2] = 4;                       // Length
+  buf[3] = CMD_MULT_SERVO_UNLOAD;   // 0x14
+  buf[4] = 1;                       // Count
+  buf[5] = id;                      // ID
+
   return writeMsg(fd, buf, msgLen);
 }
 
-static bool ReceiveResponse(int fd, uint8_t *resp, int max_resp) {
-  bool frameStarted = false;
-  uint8_t frameCount = 0;
-  uint8_t dataCount = 0;
-  uint8_t dataLength = 2;
-  uint8_t rxBuf;
-  uint8_t recvBuf[32];
-  int ret;
-
-  while (1) {
-    if ((ret = read(fd, &rxBuf, 1)) > 0) {
-      usleep(100);
-      if (!frameStarted) {
-        if (rxBuf == LOBOT_SERVO_FRAME_HEADER) {
-          frameCount++;
-          if (frameCount == 2) {
-            frameCount = 0;
-            frameStarted = true;
-            dataCount = 1;
-          }
-        } else {
-          frameStarted = false;
-          dataCount = 0;
-          frameCount = 0;
-        }
-      }
-      if (frameStarted) {
-        recvBuf[dataCount] = (uint8_t)rxBuf;
-        if (dataCount == 3) {
-          dataLength = recvBuf[dataCount];
-          if (dataLength < 3 || dataCount > 7) {
-            dataLength = 2;
-            frameStarted = false;
-          }
-        }
-        dataCount++;
-        if (dataCount == dataLength + 3) {
-
-          if (LobotCheckSum(recvBuf) == recvBuf[dataCount - 1]) {
-            frameStarted = false;
-            if (dataLength <= max_resp) {
-              memcpy(resp, recvBuf + 4, dataLength);
-              return true;
-            }
-          }
-          return false;
-        }
-      }
-    } else if (ret < 0) {
-      return false;
-    } else if (ret == 0) {
-      // timeout
-    }
-  }
+bool LobotSerialServoLoad(int /*fd*/, uint8_t /*id*/) {
+  return true;
 }
 
-static bool ReadCommand2ByteReturn(int fd, uint8_t id, uint8_t cmd,
-                                   uint16_t &val) {
-  val = -2048;
-  const int msgLen = 6;
-  uint8_t buf[msgLen];
-  buf[0] = buf[1] = LOBOT_SERVO_FRAME_HEADER;
-  buf[2] = id;
-  buf[3] = msgLen - 3;
-  buf[4] = cmd;
-  buf[5] = LobotCheckSum(buf);
+// CMD_MULT_SERVO_POS_READ (0x15)
+bool LobotSerialServoReadPosition(int fd, uint8_t id, uint16_t &position) {
+  const int reqLen = 6;
+  uint8_t buf[reqLen];
 
-  if (writeMsg(fd, buf, msgLen)) {
-    if (ReceiveResponse(fd, buf, msgLen)) {
-      val = (int16_t)uint8_t_TO_HW(buf[2], buf[1]);
-      return true;
+  buf[0] = LOBOT_SERVO_FRAME_HEADER;
+  buf[1] = LOBOT_SERVO_FRAME_HEADER;
+  buf[2] = 4;                       // Length
+  buf[3] = CMD_MULT_SERVO_POS_READ; // 0x15
+  buf[4] = 1;                       // Count
+  buf[5] = id;                      // ID
+
+  tcflush(fd, TCIFLUSH);
+
+  if (!writeMsg(fd, buf, reqLen)) {
+    return false;
+  }
+
+  uint8_t respBuf[16];
+  int n = 0;
+  int totalRead = 0;
+  int expectedLen = 8;
+  int retries = 10;
+
+  while (totalRead < expectedLen && retries > 0) {
+    n = read(fd, respBuf + totalRead, expectedLen - totalRead);
+    if (n > 0) {
+      totalRead += n;
+    } else {
+      usleep(1000); // 1ms
+      retries--;
     }
   }
+
+  if (totalRead >= expectedLen) {
+    if (respBuf[0] == LOBOT_SERVO_FRAME_HEADER && respBuf[1] == LOBOT_SERVO_FRAME_HEADER) {
+      if (respBuf[5] == id) {
+        position = uint8_t_TO_HW(respBuf[7], respBuf[6]);
+        return true;
+      }
+    }
+  }
+
   return false;
 }
 
-bool LobotSerialServoReadPosition(int fd, uint8_t id, uint16_t &position) {
-  return ReadCommand2ByteReturn(fd, id, LOBOT_SERVO_POS_READ, position);
-}
-
-bool LobotSerialServoReadVin(int fd, uint8_t id, uint16_t &vin) {
-  return ReadCommand2ByteReturn(fd, id, LOBOT_SERVO_VIN_READ, vin);
-}
+// Dummy functions
+bool LobotSerialServoStopMove(int /*fd*/, uint8_t /*id*/) { return false; }
+bool LobotSerialServoSetID(int /*fd*/, uint8_t /*oldID*/, uint8_t /*newID*/) { return false; }
+bool LobotSerialServoSetMode(int /*fd*/, uint8_t /*id*/, uint8_t /*Mode*/, int16_t /*Speed*/) { return false; }
+bool LobotSerialServoReadVin(int /*fd*/, uint8_t /*id*/, uint16_t &/*vin*/) { return false; }

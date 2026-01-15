@@ -6,6 +6,7 @@
 #include <chrono>
 #include <math.h>
 #include <cmath>
+#include <vector>
 
 #include "rclcpp/rclcpp.hpp"
 #include "rhphumanoid_hardware_interface/rhphumanoid.hpp"
@@ -14,31 +15,20 @@
 
 #define MAX_STR 255
 #define INVALID_POS 99999 // Invalid servo value
-#define A 0.026000
-#define B 0.031000
-#define C 0.010048
-#define D 0.001552
 
 const float RAD_RANGE = (240.0 / 180.0) * M_PI;
 const int UPDATE_PERIOD_MOVING_MS = 10; // (1000ms/100Hz) = 10ms
 const int UPDATE_PERIOD_IDLE_MS = 100;
-
-// Use the idle update period if this many 'moving' update
-// periods occur without getting a move command.
 const int IDLE_ENTRY_CNT = 50;
 
-// How often to check for the file that indicates the control loop should be
-// in manual mode where the user can manually move the robot arm (for specifying
-// positions for training.)
 const int UPDATE_CNT_CHK_FOR_MANUAL_MODE = (2000 / UPDATE_PERIOD_IDLE_MS);
-// File to create to enable the manual mode
 const std::string MANUAL_MODE_ENABLE_FILE = "/tmp/rhphumanoid_enable_manual_mode";
 
 const int FIRST_SET_MOVE_TIME = 1500;
-
 const int NUM_JOINTS = 7;
 
-const std::string SERIAL_DEV = "/dev/ttyUSB0";
+// [수정] 고정된 USB 장치 이름 사용
+const std::string SERIAL_DEV = "/dev/ttyRHP";
 
 namespace rhphumanoid
 {
@@ -91,23 +81,58 @@ namespace rhphumanoid
 			return false;
 		}
 
-		joint_name_map_.insert(std::make_pair("revolute_1", 1));
-		joint_name_map_.insert(std::make_pair("revolute_2", 2));
-		joint_name_map_.insert(std::make_pair("revolute_3", 3));
-		joint_name_map_.insert(std::make_pair("revolute_4", 4));
-		joint_name_map_.insert(std::make_pair("revolute_5", 5));
-		joint_name_map_.insert(std::make_pair("revolute_6", 6));
-		joint_name_map_.insert(std::make_pair("slider_1", 7));
+		joint_name_map_.insert(std::make_pair("l_sho_pitch", 1));
+		joint_name_map_.insert(std::make_pair("l_sho_roll", 2));
+		joint_name_map_.insert(std::make_pair("l_el", 3));
+		joint_name_map_.insert(std::make_pair("l_wst", 4));
+		joint_name_map_.insert(std::make_pair("l_grp", 5));
+		joint_name_map_.insert(std::make_pair("r_sho_pitch", 6));
+		joint_name_map_.insert(std::make_pair("r_sho_roll", 7));
+		joint_name_map_.insert(std::make_pair("r_el", 8));
+		joint_name_map_.insert(std::make_pair("r_wst", 9));
+		joint_name_map_.insert(std::make_pair("r_grp", 10));
+		joint_name_map_.insert(std::make_pair("l_hip_yaw", 11));
+		joint_name_map_.insert(std::make_pair("l_hip_roll", 12));
+		joint_name_map_.insert(std::make_pair("l_hip_pitch", 13));
+		joint_name_map_.insert(std::make_pair("l_knee", 14));
+		joint_name_map_.insert(std::make_pair("l_ank_pitch", 15));
+		joint_name_map_.insert(std::make_pair("l_ank_roll", 16));
+		joint_name_map_.insert(std::make_pair("r_hip_yaw", 17));
+		joint_name_map_.insert(std::make_pair("r_hip_roll", 18));
+		joint_name_map_.insert(std::make_pair("r_hip_pitch", 19));
+		joint_name_map_.insert(std::make_pair("r_knee", 20));
+		joint_name_map_.insert(std::make_pair("r_ank_pitch", 21));
+		joint_name_map_.insert(std::make_pair("r_ank_roll", 22));
+		joint_name_map_.insert(std::make_pair("head_pan", 23));
+		joint_name_map_.insert(std::make_pair("head_tilt", 24));
+
+        // 여기에 24축 모터 매핑을 추가하면 됩니다.
 
 		// range
-		// 										rad   min  max  mid   invert
-		joint_range_limits_["revolute_1"] = {RAD_RANGE, 0, 1000, 500, 1};
-		joint_range_limits_["revolute_2"] = {RAD_RANGE, 0, 1000, 500, 1};
-		joint_range_limits_["revolute_3"] = {RAD_RANGE, 0, 1000, 500, 1};
-		joint_range_limits_["revolute_4"] = {RAD_RANGE, 0, 1000, 500, 1};
-		joint_range_limits_["revolute_5"] = {RAD_RANGE, 0, 1000, 500, 1};
-		joint_range_limits_["revolute_6"] = {RAD_RANGE, 0, 1000, 500, 1};
-		joint_range_limits_["slider_1"] = {RAD_RANGE, 0, 1000, 500, 1};
+		joint_range_limits_["l_sho_pitch"] = {RAD_RANGE, 0, 1000, 500, 1};
+		joint_range_limits_["l_sho_roll"] = {RAD_RANGE, 0, 1000, 500, 1};
+		joint_range_limits_["l_el"] = {RAD_RANGE, 0, 1000, 500, 1};
+		joint_range_limits_["l_wst"] = {RAD_RANGE, 0, 1000, 500, 1};
+		joint_range_limits_["l_grp"] = {RAD_RANGE, 0, 1000, 500, 1};
+		joint_range_limits_["r_sho_pitch"] = {RAD_RANGE, 0, 1000, 500, 1};
+		joint_range_limits_["r_sho_roll"] = {RAD_RANGE, 0, 1000, 500, 1};
+		joint_range_limits_["r_el"] = {RAD_RANGE, 0, 1000, 500, 1};
+		joint_range_limits_["r_wst"] = {RAD_RANGE, 0, 1000, 500, 1};
+		joint_range_limits_["r_grp"] = {RAD_RANGE, 0, 1000, 500, 1};
+		joint_range_limits_["l_hip_yaw"] = {RAD_RANGE, 0, 1000, 500, 1};
+		joint_range_limits_["l_hip_roll"] = {RAD_RANGE, 0, 1000, 500, 1};
+		joint_range_limits_["l_hip_pitch"] = {RAD_RANGE, 0, 1000, 500, 1};
+		joint_range_limits_["l_knee"] = {RAD_RANGE, 0, 1000, 500, 1};
+		joint_range_limits_["l_ank_pitch"] = {RAD_RANGE, 0, 1000, 500, 1};
+		joint_range_limits_["l_ank_roll"] = {RAD_RANGE, 0, 1000, 500, 1};
+		joint_range_limits_["r_hip_yaw"] = {RAD_RANGE, 0, 1000, 500, 1};
+		joint_range_limits_["r_hip_roll"] = {RAD_RANGE, 0, 1000, 500, 1};
+		joint_range_limits_["r_hip_pitch"] = {RAD_RANGE, 0, 1000, 500, 1};
+		joint_range_limits_["r_knee"] = {RAD_RANGE, 0, 1000, 500, 1};
+		joint_range_limits_["r_ank_pitch"] = {RAD_RANGE, 0, 1000, 500, 1};
+		joint_range_limits_["r_ank_roll"] = {RAD_RANGE, 0, 1000, 500, 1};
+		joint_range_limits_["head_pan"] = {RAD_RANGE, 0, 1000, 500, 1};
+		joint_range_limits_["head_tilt"] = {RAD_RANGE, 0, 1000, 500, 1};
 
 		RCLCPP_INFO(rclcpp::get_logger("RHPHumanoidSystemHardware"), "Joint limits:");
 
@@ -117,15 +142,12 @@ namespace rhphumanoid
 			last_pos_set_map_[name] = {INVALID_POS, false};
 			last_pos_get_map_[name] = {INVALID_POS, false};
 
-			// Print ranges in radians
 			RCLCPP_INFO(rclcpp::get_logger("RHPHumanoidSystemHardware"), "Joint: %s,  min,max:  %f, %f",
 						name.c_str(),
 						jointValueToPosition(name, joint_range_limits_[name].min),
 						jointValueToPosition(name, joint_range_limits_[name].max));
 		}
 
-		// Read the initial positions before starting the thread that will handle that
-		// from then on
 		readJointPositions(last_pos_get_map_);
 
 		run_ = true;
@@ -135,9 +157,6 @@ namespace rhphumanoid
 		return true;
 	}
 
-	// Set position of all joint positions.  Any changes to the positions will be applied on the next
-	// periodic update.  Any previously specified update position that has not be applied yet will be
-	// dropped.
 	void rhphumanoid::setAllJointPositions(const std::vector<double> &commands, const std::vector<std::string> &joints)
 	{
 		std::lock_guard<std::mutex> guard(mutex_);
@@ -150,15 +169,7 @@ namespace rhphumanoid
 				int joint_pos = positionToJointValue(name, commands[i]);
 				if (joint_pos != last_pos_set_map_[name].pos)
 				{
-					RCLCPP_INFO(rclcpp::get_logger("RHPHumanoidSystemHardware"), "New pos cmd %*s %s: %.5f",
-								i * 8, "",
-								name.c_str(),
-								commands[i]);
 					last_pos_set_map_[name] = {joint_pos, true};
-					// Run in open-loop while moving by immediately reporting the movement has completed
-					// since reading the actual position from the servos during motion causes too much
-					// delay and jerky motion as a result.  Once motion stops, the actual joint positions
-					// will updated by the update thread.
 					last_pos_get_map_[name] = {joint_pos, false};
 					new_cmd_ = true;
 				}
@@ -170,100 +181,42 @@ namespace rhphumanoid
 		}
 	}
 
-	// Get position of all joints.  The returned position vector corresponds to the last periodic update.
 	void rhphumanoid::getAllJointPositions(std::vector<double> &positions, const std::vector<std::string> &joints)
 	{
 		std::lock_guard<std::mutex> guard(mutex_);
 		for (uint i = 0; i < joints.size(); i++)
 		{
 			positions.push_back(jointValueToPosition(joints[i], last_pos_get_map_[joints[i]].pos));
-			RCLCPP_DEBUG(rclcpp::get_logger("RHPHumanoidSystemHardware"), "Get cur pos %*s %s: %.5f",
-						 i * 8, "",
-						 joints[i].c_str(),
-						 positions[i]);
 		}
 	}
 
-	// input : rad
-	// output : unit(0 ~ 1000)
 	int rhphumanoid::convertRadToUnit(std::string joint_name, double rad)
 	{
-		// Range in servo units
 		double range = joint_range_limits_[joint_name].max - joint_range_limits_[joint_name].min;
-		// Mid-range in servo units
-		// double b = joint_range_limits_[joint_name].min.max - range/2;
 		double b = joint_range_limits_[joint_name].mid;
 		return (range * rad / joint_range_limits_[joint_name].range_rad * joint_range_limits_[joint_name].invert_factor) + b;
 	}
 
-	// input : unit(0 ~ 1000)
-	// output : rad
 	double rhphumanoid::convertUnitToRad(std::string joint_name, int unit)
 	{
-		// Range in servo units
 		double range = joint_range_limits_[joint_name].max - joint_range_limits_[joint_name].min;
-		// Mid-range in servo units
 		double b = joint_range_limits_[joint_name].mid;
-		// double b = joint_range_limits_[joint_name].min.max - range/2;
 		return (unit - b) * joint_range_limits_[joint_name].range_rad * joint_range_limits_[joint_name].invert_factor / range;
 	}
 
-	// input : jointValue : 0 ~ 1000 모터 단위
-	// output : position : moveit에서 날라오는 rad 값 (그리퍼의 경우 예외로 그리퍼 사이의 m 거리값)
 	double rhphumanoid::jointValueToPosition(std::string joint_name, int jointValue)
 	{
-		double position = 0.0;
-
-		// 그리퍼 연산
-		if (joint_name == "slider_1")
-		{
-			// 일단 jointValue를 radia 단위인 angle로..!
-			double angle = convertUnitToRad(joint_name, jointValue);
-
-			// 이제 angle을 거리(m)로 바꾸자
-			position = std::sqrt(B * B - (A * std::cos(angle) - C) * (A * std::cos(angle) - C)) + A * std::sin(angle) - std::sqrt(B * B - (A - C) * (A - C)) + D;
-
-			if(position < 0) position = 0.0; // 각도가 음수인 경우 0으로 설정
-		}
-		else
-		{
-			position = convertUnitToRad(joint_name, jointValue);
-		}
-		return position;
+		return convertUnitToRad(joint_name, jointValue);
 	}
 
-	// input : Position : moveit에서 날라오는 rad 값 (그리퍼의 경우 예외로 그리퍼 사이의 m 거리값)
-	// output : jointValue : 0 ~ 1000 모터 단위
 	int rhphumanoid::positionToJointValue(std::string joint_name, double position)
 	{
-		int jointValue = 0;
-
-		// 그리퍼
-		if (joint_name == "slider_1")
-		{
-			// 거리(m) -> 각도(rad)
-			// 변수 y 정의
-			double y = position + std::sqrt(B * B - (A - C) * (A - C)) - D;
-
-			// y의 연산을 통한 angle 계산
-			double angle = std::asin((y * y + A * A + C * C - B * B) / (2 * A * std::sqrt(y * y + C * C))) -
-						   std::asin(C / std::sqrt(y * y + C * C));
-
-			// radian 값으로 받은 angle 값을 jointValue로 변환
-			jointValue = int(convertRadToUnit(joint_name, angle));
-		}
-		// 일반 조인트
-		else
-		{
-			jointValue = int(convertRadToUnit(joint_name, position));
-		}
-		return jointValue;
+		return int(convertRadToUnit(joint_name, position));
 	}
 
-	// Read all joint positions
 	void rhphumanoid::readJointPositions(PositionMap &pos_map)
 	{
-		RCLCPP_INFO(rclcpp::get_logger("RHPHumanoidSystemHardware"), "readJointPositions start");
+		// RCLCPP_INFO(rclcpp::get_logger("RHPHumanoidSystemHardware"), "readJointPositions start");
 
 		int joint_id;
 		for (auto const &j : joint_name_map_)
@@ -274,40 +227,26 @@ namespace rhphumanoid
 			uint16_t p;
 			if (!drvr_->getJointPosition(joint_id, p))
 			{
-				RCLCPP_INFO(rclcpp::get_logger("RHPHumanoidSystemHardware"), "getJointsPosition error for joint: %d", joint_id);
+				// RCLCPP_INFO(rclcpp::get_logger("RHPHumanoidSystemHardware"), "getJointsPosition error for joint: %d", joint_id);
 				continue;
 			}
 			pos_map[name] = {p, true};
-			RCLCPP_INFO(rclcpp::get_logger("RHPHumanoidSystemHardware"), "Read servo %s, pos= %d, %f",
-						name.c_str(), p, jointValueToPosition(name, p));
 		}
 	}
 
-	// Set the specified joint position
 	void rhphumanoid::setJointPosition(std::string joint_name, int position, int time)
 	{
-		RCLCPP_INFO(rclcpp::get_logger("RHPHumanoidSystemHardware"), "Set servo %s, pos= %d, time %d",
-					joint_name.c_str(), position, time);
-
-		if (!drvr_->setJointPosition(joint_name_map_[joint_name], position, time))
-		{
-			RCLCPP_ERROR(rclcpp::get_logger("RHPHumanoidSystemHardware"), "Failed to set joint position for servo %s",
-						 joint_name.c_str());
-		}
-		return;
+		drvr_->setJointPosition(joint_name_map_[joint_name], position, time);
 	}
 
-	// Check for the file that is used to manually nenable/disable this mode for testing
 	bool rhphumanoid::manual_mode_enabled()
 	{
 		return access(MANUAL_MODE_ENABLE_FILE.c_str(), F_OK) != -1;
 	}
 
-	// Manual mode turns off the motor in the servo so you can back drive to a desired position
 	void rhphumanoid::set_manual_mode(bool enable)
 	{
 		RCLCPP_INFO(rclcpp::get_logger("RHPHumanoidSystemHardware"), "Enable manual mode: %C", enable ? 'Y' : 'N');
-
 		if (!drvr_->setManualModeAll(enable, NUM_JOINTS))
 		{
 			RCLCPP_ERROR(rclcpp::get_logger("RHPHumanoidSystemHardware"), "Failed to set joint mode enable");
@@ -328,7 +267,7 @@ namespace rhphumanoid
 		{
 			auto next_update_time = std::chrono::steady_clock::now();
 
-			RCLCPP_DEBUG(rclcpp::get_logger("RHPHumanoidSystemHardware"), "Update");
+			// RCLCPP_DEBUG(rclcpp::get_logger("RHPHumanoidSystemHardware"), "Update");
 
 			if (idle && --ck_for_manual_mode_cnt <= 0)
 			{
@@ -343,12 +282,7 @@ namespace rhphumanoid
 					}
 					else
 					{
-						// Periodically print each joint position while in manual mode
-						RCLCPP_INFO(rclcpp::get_logger("RHPHumanoidSystemHardware"), "In Manual mode, joint positions:");
-						for (auto const &p : last_pos_get_map_)
-						{
-							RCLCPP_INFO(rclcpp::get_logger("RHPHumanoidSystemHardware"), "  Pos: %d,  Joint: %s", p.second.pos, p.first.c_str());
-						}
+						RCLCPP_INFO(rclcpp::get_logger("RHPHumanoidSystemHardware"), "In Manual mode");
 					}
 				}
 				else if (!manual_mode && enabled)
@@ -379,18 +313,27 @@ namespace rhphumanoid
 			{
 				read_pos_delay_cnt = 1;
 
+                // [최적화 적용] Bulk Write 전송
+                std::vector<uint8_t> target_ids;
+                std::vector<uint16_t> target_positions;
+
 				for (auto const &c : cmd)
 				{
-					if (c.second.changed)
-					{
-						int set_pos = c.second.pos;
+                    // 모든 관절 명령 수집 (필요 시 c.second.changed 체크 가능)
+                    const std::string &joint_name = c.first;
+                    int id = joint_name_map_[joint_name];
+                    int pos = c.second.pos;
 
-						const std::string &joint = c.first;
-						RCLCPP_INFO(rclcpp::get_logger("RHPHumanoidSystemHardware"), "Update, joint %s, pos= %d, delta= %d",
-									joint.c_str(), set_pos, set_pos - pos_map[joint].pos);
-						setJointPosition(joint, set_pos, first_set ? FIRST_SET_MOVE_TIME : UPDATE_PERIOD_MOVING_MS);
-					}
+                    target_ids.push_back((uint8_t)id);
+                    target_positions.push_back((uint16_t)pos);
 				}
+
+                int move_time = first_set ? FIRST_SET_MOVE_TIME : UPDATE_PERIOD_MOVING_MS;
+
+                if (!target_ids.empty()) {
+                    drvr_->setMultiJointPositions(target_ids, target_positions, move_time);
+                }
+
 				first_set = false;
 
 				if (idle)
@@ -407,7 +350,6 @@ namespace rhphumanoid
 				RCLCPP_INFO(rclcpp::get_logger("RHPHumanoidSystemHardware"), "Entering idle mode");
 			}
 
-			// Don't read while moving since it causes jerks in the motion.  Update after commands stop.
 			if (!new_cmd && --read_pos_delay_cnt <= 0)
 			{
 				read_pos_delay_cnt = 5;
@@ -423,10 +365,7 @@ namespace rhphumanoid
 			}
 
 			next_update_time += std::chrono::milliseconds(idle ? UPDATE_PERIOD_IDLE_MS : UPDATE_PERIOD_MOVING_MS);
-
-			// Sleep for whatever remaining time until the next update
 			std::this_thread::sleep_until(next_update_time);
 		}
 	}
-
 }
