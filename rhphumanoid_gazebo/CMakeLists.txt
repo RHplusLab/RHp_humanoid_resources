@@ -10,6 +10,7 @@ find_package(ament_cmake REQUIRED)
 # Launch 파일과 World 파일 설치
 install(DIRECTORY
   launch
+  config
   DESTINATION share/${PROJECT_NAME}
 )
 
