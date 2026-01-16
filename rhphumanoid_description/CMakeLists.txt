@@ -7,11 +7,12 @@ endif()
 
 find_package(ament_cmake REQUIRED)
 
-# 데이터 파일 설치 (urdf, meshes, config, rviz 등)
+# 데이터 파일 설치
 install(DIRECTORY
   urdf
   meshes
   rviz
+  ros2_control
   DESTINATION share/${PROJECT_NAME}
 )
 

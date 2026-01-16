@@ -18,8 +18,8 @@
   <xacro:include filename="$(find rhphumanoid_description)/ros2_control/rhphumanoid.ros2_control.xacro" />
 
   <!-- body link -->
-  <link name="body_link"> 
-    <visual> 
+  <link name="body_link">
+    <visual>
       <xacro:insert_mesh_body_link />
     </visual>
     <collision>
@@ -31,12 +31,12 @@
         <box size="0 0 0"/>
       </geometry>
     </collision> -->
-    <inertial> 
+    <inertial>
       <xacro:insert_inertia_body_link />
-    </inertial> 
+    </inertial>
   </link>
 
-  <!-- arm link -->  
+  <!-- arm link -->
   <xacro:rhphumanoid_r_arm parent="body_link" />
   <xacro:rhphumanoid_l_arm parent="body_link" />
 
@@ -47,10 +47,10 @@
 
 
   <!-- head links -->
-  <xacro:rhphumanoid_head parent="body_link" />  
+  <xacro:rhphumanoid_head parent="body_link" />
 
   <xacro:if value="$(arg use_gazebo)">
-    <xacro:include filename="$(find rhphumanoid_description)/gazebo/rhphumanoid.gazebo.xacro" />
+    <xacro:include filename="rhphumanoid.gazebo.xacro" />
     <xacro:rhphumanoid_gazebo />
   </xacro:if>
 
