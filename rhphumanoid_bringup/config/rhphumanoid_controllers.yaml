@@ -1,0 +1,73 @@
+controller_manager:
+  ros__parameters:
+    update_rate: 100
+
+    joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster
+
+    # 머리 제어
+    head_controller:
+      type: joint_trajectory_controller/JointTrajectoryController
+
+    # 팔제어: upper_body
+    arm_controller:
+      type: joint_trajectory_controller/JointTrajectoryController
+
+    # 다리제어: lower_body
+    leg_controller:
+      type: joint_trajectory_controller/JointTrajectoryController
+
+# ----------------------------------------------------------------
+head_controller:
+  ros__parameters:
+    joints:
+      - head_pan
+      - head_tilt
+    command_interfaces:
+      - position
+    state_interfaces:
+      - position
+
+arm_controller:
+  ros__parameters:
+    joints:
+      # Left Arm
+      - l_sho_pitch
+      - l_sho_roll
+      - l_el
+      - l_wst
+      - l_grp
+      # Right Arm
+      - r_sho_pitch
+      - r_sho_roll
+      - r_el
+      - r_wst
+      - r_grp
+    command_interfaces:
+      - position
+    state_interfaces:
+      - position
+    allow_nonzero_velocity_at_trajectory_end: false
+
+leg_controller:
+  ros__parameters:
+    joints:
+      # Left Leg
+      - l_hip_yaw
+      - l_hip_roll
+      - l_hip_pitch
+      - l_knee
+      - l_ank_pitch
+      - l_ank_roll
+      # Right Leg
+      - r_hip_yaw
+      - r_hip_roll
+      - r_hip_pitch
+      - r_knee
+      - r_ank_pitch
+      - r_ank_roll
+    command_interfaces:
+      - position
+    state_interfaces:
+      - position
+    allow_nonzero_velocity_at_trajectory_end: false
