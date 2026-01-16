@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.8)
-project(rhphumanoid_description)
+project(rhphumanoid_gazebo)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
@@ -7,11 +7,9 @@ endif()
 
 find_package(ament_cmake REQUIRED)
 
-# 데이터 파일 설치 (urdf, meshes, config, rviz 등)
+# Launch 파일과 World 파일 설치
 install(DIRECTORY
-  urdf
-  meshes
-  rviz
+  launch
   DESTINATION share/${PROJECT_NAME}
 )
 
