@@ -1,7 +1,13 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://ros.org/wiki/xacro">
 
-  <xacro:macro name="robotis_op3_gazebo">
+  <xacro:macro name="rhphumanoid_gazebo" params="">
+
+    <gazebo>
+      <plugin filename="gz_ros2_control-system" name="gz_ros2_control::GazeboSimROS2ControlPlugin">
+        <parameters>$(find rhphumanoid_bringup)/config/rhphumanoid_controllers.yaml</parameters>
+      </plugin>
+    </gazebo>
 
     <gazebo reference="body_link">
       <mu1>0.2</mu1>
@@ -10,42 +16,36 @@
       <selfCollide>false</selfCollide>
     </gazebo>
 
-    <!-- left leg links -->
     <gazebo reference="l_hip_yaw_link">
       <mu1>0.2</mu1>
       <mu2>0.2</mu2>
       <material>Gazebo/White</material>
       <selfCollide>false</selfCollide>
     </gazebo>
-
     <gazebo reference="l_hip_roll_link">
       <mu1>0.2</mu1>
       <mu2>0.2</mu2>
       <material>Gazebo/White</material>
       <selfCollide>false</selfCollide>
     </gazebo>
-
     <gazebo reference="l_hip_pitch_link">
       <mu1>0.2</mu1>
       <mu2>0.2</mu2>
       <material>Gazebo/White</material>
       <selfCollide>false</selfCollide>
     </gazebo>
-
     <gazebo reference="l_knee_link">
       <mu1>0.2</mu1>
       <mu2>0.2</mu2>
       <material>Gazebo/White</material>
       <selfCollide>false</selfCollide>
     </gazebo>
-
     <gazebo reference="l_ank_pitch_link">
       <mu1>0.2</mu1>
       <mu2>0.2</mu2>
       <material>Gazebo/White</material>
       <selfCollide>false</selfCollide>
     </gazebo>
-
     <gazebo reference="l_ank_roll_link">
       <kp>100000.0</kp>
       <kd>100.0</kd>
@@ -57,44 +57,37 @@
       <material>Gazebo/White</material>
     </gazebo>
 
-    <!-- right leg links -->
     <gazebo reference="r_hip_yaw_link">
       <mu1>0.2</mu1>
       <mu2>0.2</mu2>
       <material>Gazebo/White</material>
       <selfCollide>false</selfCollide>
     </gazebo>
-
     <gazebo reference="r_hip_roll_link">
       <mu1>0.2</mu1>
       <mu2>0.2</mu2>
       <material>Gazebo/White</material>
       <selfCollide>false</selfCollide>
     </gazebo>
-
     <gazebo reference="r_hip_pitch_link">
       <mu1>0.2</mu1>
       <mu2>0.2</mu2>
       <material>Gazebo/White</material>
       <selfCollide>false</selfCollide>
     </gazebo>
-
     <gazebo reference="r_knee_link">
       <mu1>0.2</mu1>
       <mu2>0.2</mu2>
       <material>Gazebo/White</material>
       <selfCollide>false</selfCollide>
     </gazebo>
-
     <gazebo reference="r_ank_pitch_link">
       <mu1>0.2</mu1>
       <mu2>0.2</mu2>
       <material>Gazebo/White</material>
       <selfCollide>false</selfCollide>
     </gazebo>
-
     <gazebo reference="r_ank_roll_link">
-      <mu1>9000</mu1>
       <kp>100000.0</kp>
       <kd>100.0</kd>
       <mu1>1.5</mu1>
@@ -111,35 +104,30 @@
       <material>Gazebo/White</material>
       <selfCollide>false</selfCollide>
     </gazebo>
-
     <gazebo reference="r_sho_roll_link">
       <mu1>0.2</mu1>
       <mu2>0.2</mu2>
       <material>Gazebo/White</material>
       <selfCollide>false</selfCollide>
     </gazebo>
-
     <gazebo reference="r_el_link">
       <mu1>0.2</mu1>
       <mu2>0.2</mu2>
       <material>Gazebo/White</material>
       <selfCollide>false</selfCollide>
     </gazebo>
-
     <gazebo reference="l_sho_pitch_link">
       <mu1>0.2</mu1>
       <mu2>0.2</mu2>
       <material>Gazebo/White</material>
       <selfCollide>false</selfCollide>
     </gazebo>
-
     <gazebo reference="l_sho_roll_link">
       <mu1>0.2</mu1>
       <mu2>0.2</mu2>
       <material>Gazebo/White</material>
       <selfCollide>false</selfCollide>
     </gazebo>
-
     <gazebo reference="l_el_link">
       <mu1>0.2</mu1>
       <mu2>0.2</mu2>
@@ -153,38 +141,11 @@
       <material>Gazebo/White</material>
       <selfCollide>false</selfCollide>
     </gazebo>
-
     <gazebo reference="head_tilt_link">
       <mu1>0.2</mu1>
       <mu2>0.2</mu2>
       <material>Gazebo/White</material>
       <selfCollide>false</selfCollide>
-    </gazebo> 
-
-    <gazebo>
-      <plugin filename="gz-sim-joint-state-publisher-system" name = "gz::sim::systems::JointStatePublisher">
-        <topic>op3_gz_joint_states</topic>
-        <joint_name>r_sho_pitch</joint_name>
-        <joint_name>l_sho_pitch</joint_name>
-        <joint_name>r_sho_roll</joint_name>
-        <joint_name>l_sho_roll</joint_name>
-        <joint_name>r_el</joint_name>
-        <joint_name>l_el</joint_name>
-        <joint_name>r_hip_yaw</joint_name>
-        <joint_name>l_hip_yaw</joint_name>
-        <joint_name>r_hip_roll</joint_name>
-        <joint_name>l_hip_roll</joint_name>
-        <joint_name>r_hip_pitch</joint_name>
-        <joint_name>l_hip_pitch</joint_name>
-        <joint_name>r_knee</joint_name>
-        <joint_name>l_knee</joint_name>
-        <joint_name>r_ank_pitch</joint_name>
-        <joint_name>l_ank_pitch</joint_name>
-        <joint_name>r_ank_roll</joint_name>
-        <joint_name>l_ank_roll</joint_name>
-        <joint_name>head_pan</joint_name>
-        <joint_name>head_tilt</joint_name>
-      </plugin>
     </gazebo>
 
     <gazebo reference="cam_gazebo_link">
@@ -200,13 +161,13 @@
             <near>0.001000</near>
             <far>100.000000</far>
           </clip>
-          <camera_info_topic>camera_info</camera_info_topic>
-          <frame_id>/cam_gazebo_link</frame_id>
+          <camera_info_topic>camera/camera_info</camera_info_topic>
+          <frame_id>cam_gazebo_link</frame_id>
         </camera>
-        <alwaysOn>ture</alwaysOn>
+        <always_on>true</always_on>
         <visualize>true</visualize>
-        <update_rate>30.000000</update_rate>
-        <topic>image_raw</topic>
+        <update_rate>30.0</update_rate>
+        <topic>camera/image_raw</topic>
       </sensor>
     </gazebo>
 
@@ -215,7 +176,7 @@
         <gz_frame_id>body_link</gz_frame_id>
         <imu>
           <enable_metrics>true</enable_metrics>
-          <frame_id>/cam_gazebo_link</frame_id>
+          <frame_id>body_link</frame_id>
         </imu>
         <always_on>true</always_on>
         <visualize>true</visualize>
@@ -223,7 +184,6 @@
         <topic>imu</topic>
       </sensor>
     </gazebo>
-  
 
   </xacro:macro>
 

@@ -1,5 +1,5 @@
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, RegisterEventHandler, TimerAction, IncludeLaunchDescription
+from launch.actions import DeclareLaunchArgument, RegisterEventHandler, IncludeLaunchDescription, TimerAction
 from launch.conditions import IfCondition, UnlessCondition
 from launch.event_handlers import OnProcessExit, OnProcessStart
 from launch.substitutions import Command, FindExecutable, LaunchConfiguration, PathJoinSubstitution
@@ -11,7 +11,7 @@ def generate_launch_description():
     # 1. 패키지 경로 설정
     description_pkg = FindPackageShare("rhphumanoid_description")
     bringup_pkg = FindPackageShare("rhphumanoid_bringup")
-    gazebo_pkg = FindPackageShare("rhphumanoid_gazebo") # Gazebo 패키지 추가
+    gazebo_pkg = FindPackageShare("rhphumanoid_gazebo")
 
     # 2. 파일 경로 설정
     xacro_file = PathJoinSubstitution([description_pkg, "urdf", "rhphumanoid.urdf.xacro"])
@@ -25,7 +25,7 @@ def generate_launch_description():
     )
     use_sim = LaunchConfiguration("use_sim")
 
-    # 4. Robot Description 생성
+    # 4. Robot Description 생성 (Xacro 실행)
     robot_description_content = Command(
         [
             FindExecutable(name="xacro"), " ",
@@ -35,7 +35,7 @@ def generate_launch_description():
     )
     robot_description = {"robot_description": robot_description_content}
 
-    # 5. 노드 정의: Robot State Publisher
+    # 5. Robot State Publisher
     robot_state_publisher_node = Node(
         package="robot_state_publisher",
         executable="robot_state_publisher",
@@ -43,29 +43,38 @@ def generate_launch_description():
         parameters=[robot_description, {"use_sim_time": use_sim}],
     )
 
-    # 6. Gazebo 실행 (use_sim=true 일 때만)
-    # rhphumanoid_gazebo 패키지의 launch 파일을 포함시킵니다.
+    # 6. [Gazebo 전용] 시뮬레이터 실행 (ros_gz_sim)
     include_gazebo = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([
-            PathJoinSubstitution([
-                gazebo_pkg,
-                "launch",
-                "rhphumanoid_gz.launch.py" # Gazebo 서버/클라이언트 켜는 파일 이름 확인 필요
-            ])
+            PathJoinSubstitution([gazebo_pkg, "launch", "rhphumanoid_gz.launch.py"])
         ]),
         condition=IfCondition(use_sim)
     )
 
-    # 7. Gazebo 로봇 스폰 (use_sim=true 일 때만)
+    # 7. [Gazebo 전용] 로봇 스폰 (ros_gz_sim create)
     spawn_entity = Node(
-        package="gazebo_ros",
-        executable="spawn_entity.py",
-        arguments=["-topic", "robot_description", "-entity", "rhphumanoid"],
+        package="ros_gz_sim",
+        executable="create",
+        arguments=[
+            "-topic", "robot_description",
+            "-name", "rhphumanoid",
+            "-z", "1.0",  # 로봇 시작 높이
+        ],
         output="screen",
         condition=IfCondition(use_sim)
     )
 
-    # 8. 실제 로봇용 Controller Manager (use_sim=false 일 때만)
+    # 8. [Gazebo 전용] ROS-Gazebo Bridge (시간 동기화 필수)
+    bridge = Node(
+        package='ros_gz_bridge',
+        executable='parameter_bridge',
+        arguments=['/clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock'],
+        output='screen',
+        condition=IfCondition(use_sim)
+    )
+
+    # 9. [실제 로봇 전용] Controller Manager 실행
+    # (Gazebo에서는 플러그인이 매니저를 실행하므로 실행하지 않음)
     control_node = Node(
         package="controller_manager",
         executable="ros2_control_node",
@@ -74,7 +83,7 @@ def generate_launch_description():
         condition=UnlessCondition(use_sim)
     )
 
-    # 9. 컨트롤러 Spawner 정의
+    # 10. 컨트롤러 Spawner 정의
     joint_state_broadcaster_spawner = Node(
         package="controller_manager",
         executable="spawner",
@@ -99,7 +108,7 @@ def generate_launch_description():
         arguments=["head_controller", "--controller-manager", "/controller_manager"],
     )
 
-    # 10. 실행 순서 제어 (Delay)
+    # 11. 실행 순서 제어 (Delay)
 
     # [실제 로봇] ros2_control_node 켜진 후 스폰
     delay_spawners_real = RegisterEventHandler(
@@ -115,26 +124,26 @@ def generate_launch_description():
         condition=UnlessCondition(use_sim)
     )
 
-    # [시뮬레이션] spawn_entity 완료 후 스폰 (Gazebo가 컨트롤러 매니저를 켬)
-    delay_spawners_sim = RegisterEventHandler(
-        event_handler=OnProcessExit(
-            target_action=spawn_entity,
-            on_exit=[
-                joint_state_broadcaster_spawner,
-                arm_controller_spawner,
-                leg_controller_spawner,
-                head_controller_spawner,
-            ],
-        ),
+    # [시뮬레이션] Gazebo 스폰 후 안전하게 대기 후 컨트롤러 실행 (Timer 사용)
+    # Gazebo 내부 Controller Manager가 준비될 시간을 줍니다.
+    delay_spawners_sim = TimerAction(
+        period=5.0,
+        actions=[
+            joint_state_broadcaster_spawner,
+            arm_controller_spawner,
+            leg_controller_spawner,
+            head_controller_spawner,
+        ],
         condition=IfCondition(use_sim)
     )
 
     return LaunchDescription([
         use_sim_arg,
         robot_state_publisher_node,
-        include_gazebo,  # Gazebo 실행
-        spawn_entity,    # 로봇 생성
-        control_node,    # 실제 로봇 연결
+        include_gazebo,
+        spawn_entity,
+        bridge,
+        control_node,
         delay_spawners_real,
         delay_spawners_sim,
     ])
