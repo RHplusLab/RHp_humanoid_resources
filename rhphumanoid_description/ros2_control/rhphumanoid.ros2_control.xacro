@@ -11,6 +11,9 @@
 
         <xacro:unless value="${use_gazebo}">
           <plugin>rhphumanoid_hardware/RHPHumanoidSystemHardware</plugin>
+          <param name="example_param_hw_start_duration_sec">0.0</param>
+          <param name="example_param_hw_stop_duration_sec">2.0</param>
+          <param name="example_param_hw_slowdown">10.0</param>
         </xacro:unless>
       </hardware>
 
@@ -18,22 +21,18 @@
       <joint name="l_sho_pitch">
         <command_interface name="position"/>
         <state_interface name="position"/>
-        <state_interface name="velocity"/>
       </joint>
       <joint name="l_sho_roll">
         <command_interface name="position"/>
         <state_interface name="position"/>
-        <state_interface name="velocity"/>
       </joint>
       <joint name="l_el">
         <command_interface name="position"/>
         <state_interface name="position"/>
-        <state_interface name="velocity"/>
       </joint>
       <joint name="l_wst">
         <command_interface name="position"/>
         <state_interface name="position"/>
-        <state_interface name="velocity"/>
       </joint>
       <joint name="l_grp">
         <command_interface name="position"/>
@@ -44,22 +43,20 @@
       <joint name="r_sho_pitch">
         <command_interface name="position"/>
         <state_interface name="position"/>
-        <state_interface name="velocity"/>
       </joint>
       <joint name="r_sho_roll">
         <command_interface name="position"/>
         <state_interface name="position"/>
-        <state_interface name="velocity"/>
       </joint>
       <joint name="r_el">
         <command_interface name="position"/>
         <state_interface name="position"/>
-        <state_interface name="velocity"/>
+
       </joint>
       <joint name="r_wst">
         <command_interface name="position"/>
         <state_interface name="position"/>
-        <state_interface name="velocity"/>
+
       </joint>
       <joint name="r_grp">
         <command_interface name="position"/>
@@ -70,76 +67,76 @@
       <joint name="l_hip_yaw">
         <command_interface name="position"/>
         <state_interface name="position"/>
-        <state_interface name="velocity"/>
+
       </joint>
       <joint name="l_hip_roll">
         <command_interface name="position"/>
         <state_interface name="position"/>
-        <state_interface name="velocity"/>
+
       </joint>
       <joint name="l_hip_pitch">
         <command_interface name="position"/>
         <state_interface name="position"/>
-        <state_interface name="velocity"/>
+
       </joint>
       <joint name="l_knee">
         <command_interface name="position"/>
         <state_interface name="position"/>
-        <state_interface name="velocity"/>
+
       </joint>
       <joint name="l_ank_pitch">
         <command_interface name="position"/>
         <state_interface name="position"/>
-        <state_interface name="velocity"/>
+
       </joint>
       <joint name="l_ank_roll">
         <command_interface name="position"/>
         <state_interface name="position"/>
-        <state_interface name="velocity"/>
+
       </joint>
 
       <!-- ==================== Right Leg ==================== -->
       <joint name="r_hip_yaw">
         <command_interface name="position"/>
         <state_interface name="position"/>
-        <state_interface name="velocity"/>
+
       </joint>
       <joint name="r_hip_roll">
         <command_interface name="position"/>
         <state_interface name="position"/>
-        <state_interface name="velocity"/>
+
       </joint>
       <joint name="r_hip_pitch">
         <command_interface name="position"/>
         <state_interface name="position"/>
-        <state_interface name="velocity"/>
+
       </joint>
       <joint name="r_knee">
         <command_interface name="position"/>
         <state_interface name="position"/>
-        <state_interface name="velocity"/>
+
       </joint>
       <joint name="r_ank_pitch">
         <command_interface name="position"/>
         <state_interface name="position"/>
-        <state_interface name="velocity"/>
+
       </joint>
       <joint name="r_ank_roll">
         <command_interface name="position"/>
         <state_interface name="position"/>
-        <state_interface name="velocity"/>
+
       </joint>
 
       <!-- ==================== Head ==================== -->
       <joint name="head_pan">
         <command_interface name="position"/>
         <state_interface name="position"/>
-        <state_interface name="velocity"/>
+
       </joint>
       <joint name="head_tilt">
         <command_interface name="position"/>
         <state_interface name="position"/>
-        <state_interface name="velocity"/>
+
       </joint>
 
     </ros2_control>
