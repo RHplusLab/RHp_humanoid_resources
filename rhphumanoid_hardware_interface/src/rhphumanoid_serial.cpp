@@ -16,6 +16,9 @@
 #include "rhphumanoid_hardware_interface/rhphumanoid_serial.hpp"
 #include "rhphumanoid_hardware_interface/serial_servo_bus.hpp"
 
+///////////////////////////////////////////////////////////////////////////////////////////
+// From https://stackoverflow.com/questions/6947413/how-to-open-read-and-write-from-serial-port-in-c
+
 static int set_interface_attribs(int fd, int speed)
 {
     struct termios tty;
@@ -28,17 +31,19 @@ static int set_interface_attribs(int fd, int speed)
     cfsetospeed(&tty, (speed_t)speed);
     cfsetispeed(&tty, (speed_t)speed);
 
-    tty.c_cflag |= (CLOCAL | CREAD);
+    tty.c_cflag |= (CLOCAL | CREAD);    /* ignore modem controls */
     tty.c_cflag &= ~CSIZE;
-    tty.c_cflag |= CS8;
-    tty.c_cflag &= ~PARENB;
-    tty.c_cflag &= ~CSTOPB;
-    tty.c_cflag &= ~CRTSCTS;
+    tty.c_cflag |= CS8;         /* 8-bit characters */
+    tty.c_cflag &= ~PARENB;     /* no parity bit */
+    tty.c_cflag &= ~CSTOPB;     /* only need 1 stop bit */
+    tty.c_cflag &= ~CRTSCTS;    /* no hardware flowcontrol */
 
+    /* setup for non-canonical mode */
     tty.c_iflag &= ~(IGNBRK | BRKINT | PARMRK | ISTRIP | INLCR | IGNCR | ICRNL | IXON);
     tty.c_lflag &= ~(ECHO | ECHONL | ICANON | ISIG | IEXTEN);
     tty.c_oflag &= ~OPOST;
 
+    /* fetch bytes as they become available */
     tty.c_cc[VMIN] = 1;
     tty.c_cc[VTIME] = 1;
 
@@ -64,6 +69,7 @@ static void set_mincount(int fd, int mcount, int to_x100ms)
     if (tcsetattr(fd, TCSANOW, &tty) < 0)
         fprintf(stderr, "Error tcsetattr: %s\n", strerror(errno));
 }
+///////////////////////////////////////////////////////////////////////////////////////////
 
 namespace rhphumanoid
 {
@@ -91,10 +97,10 @@ namespace rhphumanoid
 			return false;
 		}
 
-  		// Baud rate 9600 for Bus Servo Controller v1.0
-	    set_interface_attribs(fd_, B9600);
+  		// 115200, 8 bits, no parity, 1 stop bit
+	    set_interface_attribs(fd_, B115200);
 		set_mincount(fd_, 0, 5);
-		RCLCPP_INFO(rclcpp::get_logger("RHPHumanoidSystemHardware"), "rhpHumanoid device opened at 9600 baud");
+		RCLCPP_INFO(rclcpp::get_logger("RHPHumanoidSystemHardware"), "rhpHumanoid device opened ");
 		return true;
 	}
 
@@ -108,9 +114,9 @@ namespace rhphumanoid
 
 	bool rhphumanoid_serial::getJointPosition(int id, uint16_t &pos)
 	{
-		// RCLCPP_DEBUG(rclcpp::get_logger("RHPHumanoidSystemHardware"), "readJointPosition");
+		RCLCPP_DEBUG(rclcpp::get_logger("RHPHumanoidSystemHardware"), "readJointPosition");
 		if (!LobotSerialServoReadPosition(fd_, id, pos)) {
-			// RCLCPP_ERROR(rclcpp::get_logger("RHPHumanoidSystemHardware"), "Failed to read servo %d position", id);
+			RCLCPP_ERROR(rclcpp::get_logger("RHPHumanoidSystemHardware"), "Failed to read servo %d position", id);
 			return false;
 		}
 		return true;
@@ -124,12 +130,6 @@ namespace rhphumanoid
 		}
 		return true;
 	}
-
-    // [추가] Bulk Move 호출
-    bool rhphumanoid_serial::setMultiJointPositions(const std::vector<uint8_t> &ids, const std::vector<uint16_t> &positions, uint16_t time)
-    {
-        return LobotSerialServoMoveBulk(fd_, ids, positions, time);
-    }
 
 	bool rhphumanoid_serial::setManualModeAll(bool enable, int count)
 	{

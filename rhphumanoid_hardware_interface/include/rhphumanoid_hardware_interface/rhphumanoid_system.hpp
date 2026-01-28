@@ -1,10 +1,23 @@
-#ifndef RHPHUMANOID_SYSTEM__HPP
-#define RHPHUMANOID_SYSTEM__HPP
+// Copyright 2020 ros2_control Development Team
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+#ifndef RHPHUMANOID_HARDWARE_INTERFACE__RHPHUMANOID_SYSTEM_HPP_
+#define RHPHUMANOID_HARDWARE_INTERFACE__RHPHUMANOID_SYSTEM_HPP_
 
 #include <memory>
 #include <string>
 #include <vector>
-#include <map>
 
 #include "hardware_interface/handle.hpp"
 #include "hardware_interface/hardware_info.hpp"
@@ -12,26 +25,18 @@
 #include "hardware_interface/types/hardware_interface_return_values.hpp"
 #include "rclcpp/macros.hpp"
 #include "rhphumanoid_hardware_interface/visibility_control.hpp"
-
-#include "rhphumanoid_hardware_interface/rhphumanoid.hpp"
+#include "rhphumanoid.hpp"
 
 namespace rhphumanoid_hardware
 {
-class RHPHumanoidSystemHardware : public hardware_interface::SystemInterface
+class RHPHumanoidSystemHardware
+: public hardware_interface::SystemInterface
 {
 public:
-  RCLCPP_SHARED_PTR_DEFINITIONS(RHPHumanoidSystemHardware)
+  RCLCPP_SHARED_PTR_DEFINITIONS(RHPHumanoidSystemHardware);
 
   RHPHUMANOID_HARDWARE_INTERFACE_PUBLIC
-#ifdef ROS_DISTRO_HUMBLE
-  // Humble용 선언
-  hardware_interface::CallbackReturn on_init(
-    const hardware_interface::HardwareInfo & info) override;
-#else
-  // Jazzy/Rolling용 선언
-  hardware_interface::CallbackReturn on_init(
-    const hardware_interface::HardwareComponentInterfaceParams & params) override;
-#endif
+  CallbackReturn on_init(const hardware_interface::HardwareInfo & info) override;
 
   RHPHUMANOID_HARDWARE_INTERFACE_PUBLIC
   std::vector<hardware_interface::StateInterface> export_state_interfaces() override;
@@ -40,39 +45,34 @@ public:
   std::vector<hardware_interface::CommandInterface> export_command_interfaces() override;
 
   RHPHUMANOID_HARDWARE_INTERFACE_PUBLIC
-  hardware_interface::CallbackReturn on_activate(
-    const rclcpp_lifecycle::State & previous_state) override;
+  CallbackReturn on_activate(const rclcpp_lifecycle::State & previous_state) override;
 
   RHPHUMANOID_HARDWARE_INTERFACE_PUBLIC
-  hardware_interface::CallbackReturn on_deactivate(
-    const rclcpp_lifecycle::State & previous_state) override;
+  CallbackReturn on_deactivate(const rclcpp_lifecycle::State & previous_state) override;
 
   RHPHUMANOID_HARDWARE_INTERFACE_PUBLIC
-  hardware_interface::return_type read(
-    const rclcpp::Time & time, const rclcpp::Duration & period) override;
+  hardware_interface::return_type read(const rclcpp::Time & time, const rclcpp::Duration & period) override;
 
   RHPHUMANOID_HARDWARE_INTERFACE_PUBLIC
-  hardware_interface::return_type write(
-    const rclcpp::Time & time, const rclcpp::Duration & period) override;
+  hardware_interface::return_type write(const rclcpp::Time & time, const rclcpp::Duration & period) override;
 
 private:
   // Parameters for the RHPHumanoid simulation
   double hw_start_sec_;
   double hw_stop_sec_;
   double hw_slowdown_;
+  double joint_initial_value[7];
 
   // Store the command for the simulated robot
   std::vector<double> hw_commands_;
   std::vector<double> hw_commands_last_;
+
   std::vector<double> hw_states_;
   std::vector<std::string> hw_joint_name_;
-
-  // 초기값 저장을 위한 map
-  std::map<int, double> joint_initial_value;
 
   rhphumanoid::rhphumanoid rhphumanoid;
 };
 
 }  // namespace rhphumanoid_hardware
 
-#endif  // RHPHUMANOID_SYSTEM__HPP
+#endif  // RHPHUMANOID_HARDWARE_INTERFACE__RHPHUMANOID_SYSTEM_HPP_
