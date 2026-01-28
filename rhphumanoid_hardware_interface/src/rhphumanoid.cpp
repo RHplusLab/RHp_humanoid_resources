@@ -32,8 +32,8 @@ const std::string MANUAL_MODE_ENABLE_FILE = "/tmp/rhphumanoid_enable_manual_mode
 
 const int FIRST_SET_MOVE_TIME = 1500;
 
-// 24 DOF
-const int NUM_JOINTS = 24;
+// 22 DOF
+const int NUM_JOINTS = 22;
 
 // Fixed serial device
 const std::string SERIAL_DEV = "/dev/ttyTHS1";
@@ -116,8 +116,8 @@ namespace rhphumanoid
 		joint_name_map_.insert(std::make_pair("r_ank_pitch", 21));
 		joint_name_map_.insert(std::make_pair("r_ank_roll", 22));
 
-		joint_name_map_.insert(std::make_pair("head_pan", 23));
-		joint_name_map_.insert(std::make_pair("head_tilt", 24));
+		//joint_name_map_.insert(std::make_pair("head_pan", 23));
+		//joint_name_map_.insert(std::make_pair("head_tilt", 24));
 
 		// ===== Joint limits =====
 		//                          range_rad  min  max  mid  invert
@@ -147,8 +147,8 @@ namespace rhphumanoid
 		joint_range_limits_["r_ank_pitch"] = {RAD_RANGE, 0, 1000, 500, 1};
 		joint_range_limits_["r_ank_roll"]  = {RAD_RANGE, 0, 1000, 500, 1};
 
-		joint_range_limits_["head_pan"]  = {RAD_RANGE, 0, 1000, 500, 1};
-		joint_range_limits_["head_tilt"] = {RAD_RANGE, 0, 1000, 500, 1};
+		//joint_range_limits_["head_pan"]  = {RAD_RANGE, 0, 1000, 500, 1};
+		//joint_range_limits_["head_tilt"] = {RAD_RANGE, 0, 1000, 500, 1};
 
 		RCLCPP_INFO(rclcpp::get_logger("RHPHumanoidSystemHardware"), "Joint limits:");
 		for (const auto &j : joint_name_map_)
