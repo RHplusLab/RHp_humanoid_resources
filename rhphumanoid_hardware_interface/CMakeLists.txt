@@ -1,9 +1,14 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.8)
 project(rhphumanoid_hardware_interface)
 
-# Default to C++14
+# [수정] ROS 2 Humble 및 Jazzy 호환을 위해 C++17 사용
 if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 14)
+  set(CMAKE_CXX_STANDARD 17)
+endif()
+
+# [추가] ROS_DISTRO 환경 변수를 확인하여 Humble일 경우 매크로 정의
+if(DEFINED ENV{ROS_DISTRO} AND "$ENV{ROS_DISTRO}" STREQUAL "humble")
+  add_compile_definitions(ROS_DISTRO_HUMBLE)
 endif()
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
@@ -45,17 +50,29 @@ ament_target_dependencies(
 
 target_link_libraries(${PROJECT_NAME} PkgConfig::hidapi-hidraw)
 
+# 플러그인 설명 파일 내보내기
 pluginlib_export_plugin_description_file(hardware_interface rhphumanoid_hardware.xml)
 
 # INSTALL
+
+# 1. 라이브러리 파일 설치
 install(
   TARGETS ${PROJECT_NAME}
-  DESTINATION lib/${PROJECT_NAME}
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
 )
 
+# 2. 헤더 파일 설치
 install(
   DIRECTORY include/
-  DESTINATION include/${PROJECT_NAME}
+  DESTINATION include
+)
+
+# 3. 플러그인 XML 파일 설치
+install(
+  FILES rhphumanoid_hardware.xml
+  DESTINATION share/${PROJECT_NAME}
 )
 
 if(BUILD_TESTING)

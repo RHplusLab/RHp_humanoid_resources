@@ -27,23 +27,57 @@
 
 namespace rhphumanoid_hardware
 {
-  hardware_interface::CallbackReturn RHPHumanoidSystemHardware::on_init(const hardware_interface::HardwareInfo & info)
+
+// [수정] ROS 버전별 on_init 구현 분기
+#ifdef ROS_DISTRO_HUMBLE
+hardware_interface::CallbackReturn RHPHumanoidSystemHardware::on_init(
+  const hardware_interface::HardwareInfo & info)
+{
+  // Humble: HardwareInfo를 직접 전달
+  if (hardware_interface::SystemInterface::on_init(info) != hardware_interface::CallbackReturn::SUCCESS)
   {
-   if (hardware_interface::SystemInterface::on_init(info) != hardware_interface::CallbackReturn::SUCCESS)
-   {
-     return hardware_interface::CallbackReturn::ERROR;
-   }
+    return hardware_interface::CallbackReturn::ERROR;
+  }
+#else
+hardware_interface::CallbackReturn RHPHumanoidSystemHardware::on_init(
+  const hardware_interface::HardwareComponentInterfaceParams & params)
+{
+  // Jazzy/Rolling: Params 구조체 전달
+  if (hardware_interface::SystemInterface::on_init(params) != hardware_interface::CallbackReturn::SUCCESS)
+  {
+    return hardware_interface::CallbackReturn::ERROR;
+  }
+#endif
 
-
+  // 이후 로직은 공통 (부모 클래스가 info_ 멤버 변수를 설정함)
   RCLCPP_INFO(rclcpp::get_logger("RHPHumanoidSystemHardware"), "Number of joints= %ld", info_.joints.size());
 
-  hw_start_sec_ = stod(info_.hardware_parameters["example_param_hw_start_duration_sec"]);
-  hw_stop_sec_ = stod(info_.hardware_parameters["example_param_hw_stop_duration_sec"]);
-  hw_slowdown_ = stod(info_.hardware_parameters["example_param_hw_slowdown"]);
+  // 1. 파라미터가 존재하는지 확인하고, 없으면 기본값 사용
+  if (info_.hardware_parameters.count("example_param_hw_start_duration_sec")) {
+    hw_start_sec_ = stod(info_.hardware_parameters.at("example_param_hw_start_duration_sec"));
+  } else {
+    hw_start_sec_ = 0.0;
+  }
 
-  // urdf <ros2_control> tag에서 initial_value 가져오기
+  if (info_.hardware_parameters.count("example_param_hw_stop_duration_sec")) {
+    hw_stop_sec_ = stod(info_.hardware_parameters.at("example_param_hw_stop_duration_sec"));
+  } else {
+    hw_stop_sec_ = 0.0;
+  }
+
+  if (info_.hardware_parameters.count("example_param_hw_slowdown")) {
+    hw_slowdown_ = stod(info_.hardware_parameters.at("example_param_hw_slowdown"));
+  } else {
+    hw_slowdown_ = 10.0;
+  }
+
+  // 2. Initial Value 설정
   for(int i = 0; i < (int)info_.joints.size(); i++){
-    joint_initial_value[i] = stod(info_.joints[i].state_interfaces[0].initial_value);
+    if (!info_.joints[i].state_interfaces[0].initial_value.empty()) {
+        joint_initial_value[i] = stod(info_.joints[i].state_interfaces[0].initial_value);
+    } else {
+        joint_initial_value[i] = 0.0;
+    }
   }
 
   hw_states_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
