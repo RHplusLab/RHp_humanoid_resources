@@ -36,7 +36,7 @@ const int FIRST_SET_MOVE_TIME = 1500;
 const int NUM_JOINTS = 22;
 
 // Fixed serial device
-const std::string SERIAL_DEV = "/dev/ttyTHS1";
+const std::string SERIAL_DEV = "/dev/ttyRHP";
 
 namespace rhphumanoid
 {
