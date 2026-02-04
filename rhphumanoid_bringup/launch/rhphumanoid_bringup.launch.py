@@ -20,12 +20,11 @@ def generate_launch_description():
     controller_file = PathJoinSubstitution([bringup_pkg_share, "config", "rhphumanoid_controllers.yaml"])
 
     # 3. [핵심 수정] Gazebo가 메쉬 파일을 찾을 수 있도록 환경변수 추가
-    # rhphumanoid_description 패키지의 상위 폴더를 리소스 경로에 추가합니다.
-    # 이렇게 하면 model://rhphumanoid_description/... 경로를 인식할 수 있습니다.
+    # Humble/Fortress에서는 IGN_GAZEBO_RESOURCE_PATH를 사용합니다.
     ros_share_path = os.path.join(get_package_share_directory('rhphumanoid_description'), '..')
 
     set_gz_resource_path = AppendEnvironmentVariable(
-        name='GZ_SIM_RESOURCE_PATH',
+        name='IGN_GAZEBO_RESOURCE_PATH',
         value=ros_share_path
     )
 
@@ -55,7 +54,8 @@ def generate_launch_description():
         parameters=[robot_description, {"use_sim_time": use_sim}],
     )
 
-    # 7. [Gazebo 전용] 시뮬레이터 실행 (ros_gz_sim)
+    # 7. [Gazebo 전용] 시뮬레이터 실행
+    # 주의: rhphumanoid_gz.launch.py 파일 내부도 ros_ign_gazebo를 쓰는지 확인이 필요할 수 있습니다.
     include_gazebo = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([
             PathJoinSubstitution([gazebo_pkg_share, "launch", "rhphumanoid_gz.launch.py"])
@@ -63,24 +63,25 @@ def generate_launch_description():
         condition=IfCondition(use_sim)
     )
 
-    # 8. [Gazebo 전용] 로봇 스폰 (ros_gz_sim create)
+    # 8. [Gazebo 전용] 로봇 스폰 (ros_ign_gazebo 사용)
     spawn_entity = Node(
-        package="ros_gz_sim",
+        package="ros_ign_gazebo",
         executable="create",
         arguments=[
             "-topic", "robot_description",
             "-name", "rhphumanoid",
-            "-z", "1.0",  # 로봇 시작 높이 (바닥에 박히지 않도록 띄움)
+            "-z", "1.0",  # 로봇 시작 높이
         ],
         output="screen",
         condition=IfCondition(use_sim)
     )
 
-    # 9. [Gazebo 전용] ROS-Gazebo Bridge (시간 동기화)
+    # 9. [Gazebo 전용] ROS-Gazebo Bridge (ros_ign_bridge 사용)
     bridge = Node(
-        package='ros_gz_bridge',
+        package='ros_ign_bridge',
         executable='parameter_bridge',
-        arguments=['/clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock'],
+        # gz.msgs -> ignition.msgs 변경
+        arguments=['/clock@rosgraph_msgs/msg/Clock[ignition.msgs.Clock'],
         output='screen',
         condition=IfCondition(use_sim)
     )
@@ -121,7 +122,7 @@ def generate_launch_description():
 
     # 12. 실행 순서 제어 (Delay)
 
-    # [실제 로봇] ros2_control_node 켜진 후 스폰
+    # [실제 로봇]
     delay_spawners_real = RegisterEventHandler(
         event_handler=OnProcessStart(
             target_action=control_node,
@@ -135,7 +136,7 @@ def generate_launch_description():
         condition=UnlessCondition(use_sim)
     )
 
-    # [시뮬레이션] Gazebo 스폰 후 안전하게 대기 후 컨트롤러 실행
+    # [시뮬레이션]
     delay_spawners_sim = TimerAction(
         period=5.0,
         actions=[
@@ -148,7 +149,7 @@ def generate_launch_description():
     )
 
     return LaunchDescription([
-        set_gz_resource_path, # <--- 환경변수 설정 추가됨
+        set_gz_resource_path,
         use_sim_arg,
         robot_state_publisher_node,
         include_gazebo,
