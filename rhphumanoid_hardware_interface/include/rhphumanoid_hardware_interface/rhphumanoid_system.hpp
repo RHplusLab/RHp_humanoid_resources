@@ -36,15 +36,9 @@ public:
   RCLCPP_SHARED_PTR_DEFINITIONS(RHPHumanoidSystemHardware);
 
   RHPHUMANOID_HARDWARE_INTERFACE_PUBLIC
-#ifdef ROS_DISTRO_HUMBLE
   // Humble용 선언
   hardware_interface::CallbackReturn on_init(
     const hardware_interface::HardwareInfo & info) override;
-#else
-  // Jazzy/Rolling용 선언
-  hardware_interface::CallbackReturn on_init(
-    const hardware_interface::HardwareComponentInterfaceParams & params) override;
-#endif
 
   RHPHUMANOID_HARDWARE_INTERFACE_PUBLIC
   std::vector<hardware_interface::StateInterface> export_state_interfaces() override;

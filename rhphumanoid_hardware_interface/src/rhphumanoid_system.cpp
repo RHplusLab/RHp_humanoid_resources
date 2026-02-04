@@ -28,8 +28,6 @@
 namespace rhphumanoid_hardware
 {
 
-// [수정] ROS 버전별 on_init 구현 분기
-#ifdef ROS_DISTRO_HUMBLE
 hardware_interface::CallbackReturn RHPHumanoidSystemHardware::on_init(
   const hardware_interface::HardwareInfo & info)
 {
@@ -38,18 +36,7 @@ hardware_interface::CallbackReturn RHPHumanoidSystemHardware::on_init(
   {
     return hardware_interface::CallbackReturn::ERROR;
   }
-#else
-hardware_interface::CallbackReturn RHPHumanoidSystemHardware::on_init(
-  const hardware_interface::HardwareComponentInterfaceParams & params)
-{
-  // Jazzy/Rolling: Params 구조체 전달
-  if (hardware_interface::SystemInterface::on_init(params) != hardware_interface::CallbackReturn::SUCCESS)
-  {
-    return hardware_interface::CallbackReturn::ERROR;
-  }
-#endif
 
-  // 이후 로직은 공통 (부모 클래스가 info_ 멤버 변수를 설정함)
   RCLCPP_INFO(rclcpp::get_logger("RHPHumanoidSystemHardware"), "Number of joints= %ld", info_.joints.size());
 
   // 1. 파라미터가 존재하는지 확인하고, 없으면 기본값 사용
