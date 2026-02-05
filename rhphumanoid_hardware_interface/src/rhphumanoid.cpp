@@ -90,31 +90,31 @@ namespace rhphumanoid
 		}
 
 		// ===== Joint name -> ID mapping (24 DOF) =====
-		joint_name_map_.insert(std::make_pair("l_sho_pitch", 1));
-		joint_name_map_.insert(std::make_pair("l_sho_roll", 2));
-		joint_name_map_.insert(std::make_pair("l_el", 3));
-		joint_name_map_.insert(std::make_pair("l_wst", 4));
-		joint_name_map_.insert(std::make_pair("l_grp", 5));
+		joint_name_map_.insert(std::make_pair("l_hip_yaw", 1));
+		joint_name_map_.insert(std::make_pair("l_hip_roll", 2));
+		joint_name_map_.insert(std::make_pair("l_hip_pitch", 3));
+		joint_name_map_.insert(std::make_pair("l_knee", 4));
+		joint_name_map_.insert(std::make_pair("l_ank_pitch", 5));
+		joint_name_map_.insert(std::make_pair("l_ank_roll", 6));
 
-		joint_name_map_.insert(std::make_pair("r_sho_pitch", 6));
-		joint_name_map_.insert(std::make_pair("r_sho_roll", 7));
-		joint_name_map_.insert(std::make_pair("r_el", 8));
-		joint_name_map_.insert(std::make_pair("r_wst", 9));
-		joint_name_map_.insert(std::make_pair("r_grp", 10));
+		joint_name_map_.insert(std::make_pair("r_hip_yaw", 7));
+		joint_name_map_.insert(std::make_pair("r_hip_roll", 8));
+		joint_name_map_.insert(std::make_pair("r_hip_pitch", 9));
+		joint_name_map_.insert(std::make_pair("r_knee", 10));
+		joint_name_map_.insert(std::make_pair("r_ank_pitch", 11));
+		joint_name_map_.insert(std::make_pair("r_ank_roll", 12));
 
-		joint_name_map_.insert(std::make_pair("l_hip_yaw", 11));
-		joint_name_map_.insert(std::make_pair("l_hip_roll", 12));
-		joint_name_map_.insert(std::make_pair("l_hip_pitch", 13));
-		joint_name_map_.insert(std::make_pair("l_knee", 14));
-		joint_name_map_.insert(std::make_pair("l_ank_pitch", 15));
-		joint_name_map_.insert(std::make_pair("l_ank_roll", 16));
+		joint_name_map_.insert(std::make_pair("l_sho_pitch", 13));
+		joint_name_map_.insert(std::make_pair("l_sho_roll", 14));
+		joint_name_map_.insert(std::make_pair("l_el", 15));
+		joint_name_map_.insert(std::make_pair("l_wst", 16));
+		joint_name_map_.insert(std::make_pair("l_grp", 17));
 
-		joint_name_map_.insert(std::make_pair("r_hip_yaw", 17));
-		joint_name_map_.insert(std::make_pair("r_hip_roll", 18));
-		joint_name_map_.insert(std::make_pair("r_hip_pitch", 19));
-		joint_name_map_.insert(std::make_pair("r_knee", 20));
-		joint_name_map_.insert(std::make_pair("r_ank_pitch", 21));
-		joint_name_map_.insert(std::make_pair("r_ank_roll", 22));
+		joint_name_map_.insert(std::make_pair("r_sho_pitch", 18));
+		joint_name_map_.insert(std::make_pair("r_sho_roll", 19));
+		joint_name_map_.insert(std::make_pair("r_el", 20));
+		joint_name_map_.insert(std::make_pair("r_wst", 21));
+		joint_name_map_.insert(std::make_pair("r_grp", 22));
 
 		//joint_name_map_.insert(std::make_pair("head_pan", 23));
 		//joint_name_map_.insert(std::make_pair("head_tilt", 24));
