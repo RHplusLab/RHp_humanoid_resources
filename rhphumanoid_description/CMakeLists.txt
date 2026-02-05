@@ -13,6 +13,7 @@ install(DIRECTORY
   meshes
   rviz
   ros2_control
+  launch
   DESTINATION share/${PROJECT_NAME}
 )
 
