@@ -4,7 +4,7 @@
   <xacro:macro name="rhphumanoid_gazebo" params="">
 
     <gazebo>
-      <plugin filename="gz_ros2_control-system" name="ign_ros2_control::GazeboSimROS2ControlPlugin">
+      <plugin filename="gz_ros2_control-system" name="gz_ros2_control::GazeboSimROS2ControlPlugin">
         <parameters>$(find rhphumanoid_bringup)/config/rhphumanoid_controllers.yaml</parameters>
       </plugin>
     </gazebo>
@@ -151,7 +151,7 @@
 
     <gazebo reference="cam_gazebo_link">
       <sensor name='camera' type='camera'>
-        <ign_frame_id>cam_gazebo_link</ign_frame_id>
+        <gz_frame_id>cam_gazebo_link</gz_frame_id>
         <camera name='__default__'>
           <horizontal_fov>1.012300</horizontal_fov>
           <image>
@@ -174,7 +174,7 @@
 
     <gazebo reference="body_link">
       <sensor name="imu" type="imu">
-        <ign_frame_id>body_link</ign_frame_id>
+        <gz_frame_id>body_link</gz_frame_id>
         <imu>
           <enable_metrics>true</enable_metrics>
           <frame_id>body_link</frame_id>

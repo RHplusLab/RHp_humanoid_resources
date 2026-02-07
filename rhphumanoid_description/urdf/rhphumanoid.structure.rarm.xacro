@@ -21,14 +21,11 @@
       <xacro:insert_mesh_r_sho_pitch_link />
     </visual>
     <collision>
-      <xacro:insert_mesh_r_sho_pitch_link />
-    </collision>
-    <!-- <collision>
-      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <origin xyz="-0.0001 -0.0220 0.0000" rpy="0 0 0"/>
       <geometry>
-        <box size="0 0 0"/>
+        <box size="0.0510 0.0511 0.0300"/>
       </geometry>
-    </collision> -->
+    </collision>
     <inertial>
       <xacro:insert_inertia_r_sho_pitch_link />
     </inertial>
@@ -51,14 +48,11 @@
       <xacro:insert_mesh_r_sho_roll_link />
     </visual>
     <collision>
-      <xacro:insert_mesh_r_sho_roll_link />
-    </collision>
-    <!-- <collision>
-      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <origin xyz="-0.0252 -0.0051 -0.0259" rpy="0 0 0"/>
       <geometry>
-        <box size="0 0 0"/>
+        <box size="0.0572 0.0401 0.0716"/>
       </geometry>
-    </collision> -->
+    </collision>
     <inertial>
       <xacro:insert_inertia_r_sho_roll_link />
     </inertial>
@@ -81,14 +75,11 @@
       <xacro:insert_mesh_r_el_link />
     </visual>
     <collision>
-      <xacro:insert_mesh_r_el_link />
-    </collision>
-    <!-- <collision>
-      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <origin xyz="0.0044 0.0000 -0.0196" rpy="0 0 0"/>
       <geometry>
-        <box size="0 0 0"/>
+        <box size="0.0391 0.0572 0.0465"/>
       </geometry>
-    </collision> -->
+    </collision>
     <inertial>
       <xacro:insert_inertia_r_el_link />
     </inertial>
@@ -111,14 +102,11 @@
       <xacro:insert_mesh_r_wst_link />
     </visual>
     <collision>
-      <xacro:insert_mesh_r_wst_link />
-    </collision>
-    <!-- <collision>
-      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <origin xyz="-0.0102 -0.0228 -0.0520" rpy="0 0 0"/>
       <geometry>
-        <box size="0 0 0"/>
+        <box size="0.0536 0.0564 0.1241"/>
       </geometry>
-    </collision> -->
+    </collision>
     <inertial>
       <xacro:insert_inertia_r_wst_link />
     </inertial>
@@ -141,14 +129,11 @@
       <xacro:insert_mesh_r_grp_link />
     </visual>
     <collision>
-      <xacro:insert_mesh_r_grp_link />
-    </collision>
-    <!-- <collision>
-      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <origin xyz="-0.0252 -0.0070 -0.0305" rpy="0 0 0"/>
       <geometry>
-        <box size="0 0 0"/>
+        <box size="0.0572 0.0340 0.0810"/>
       </geometry>
-    </collision> -->
+    </collision>
     <inertial>
       <xacro:insert_inertia_r_grp_link />
     </inertial>

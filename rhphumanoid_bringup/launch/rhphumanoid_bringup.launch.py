@@ -20,11 +20,11 @@ def generate_launch_description():
     controller_file = PathJoinSubstitution([bringup_pkg_share, "config", "rhphumanoid_controllers.yaml"])
 
     # 3. [핵심 수정] Gazebo가 메쉬 파일을 찾을 수 있도록 환경변수 추가
-    # Humble/Fortress에서는 IGN_GAZEBO_RESOURCE_PATH를 사용합니다.
+    # Humble/Fortress에서는 GZ_SIM_RESOURCE_PATH를 사용합니다.
     ros_share_path = os.path.join(get_package_share_directory('rhphumanoid_description'), '..')
 
     set_gz_resource_path = AppendEnvironmentVariable(
-        name='IGN_GAZEBO_RESOURCE_PATH',
+        name='GZ_SIM_RESOURCE_PATH',
         value=ros_share_path
     )
 
@@ -55,7 +55,7 @@ def generate_launch_description():
     )
 
     # 7. [Gazebo 전용] 시뮬레이터 실행
-    # 주의: rhphumanoid_gz.launch.py 파일 내부도 ros_ign_gazebo를 쓰는지 확인이 필요할 수 있습니다.
+    # 주의: rhphumanoid_gz.launch.py 파일 내부도 ros_gz_sim를 쓰는지 확인이 필요할 수 있습니다.
     include_gazebo = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([
             PathJoinSubstitution([gazebo_pkg_share, "launch", "rhphumanoid_gz.launch.py"])
@@ -63,9 +63,9 @@ def generate_launch_description():
         condition=IfCondition(use_sim)
     )
 
-    # 8. [Gazebo 전용] 로봇 스폰 (ros_ign_gazebo 사용)
+    # 8. [Gazebo 전용] 로봇 스폰 (ros_gz_sim 사용)
     spawn_entity = Node(
-        package="ros_ign_gazebo",
+        package="ros_gz_sim",
         executable="create",
         arguments=[
             "-topic", "robot_description",
@@ -76,9 +76,9 @@ def generate_launch_description():
         condition=IfCondition(use_sim)
     )
 
-    # 9. [Gazebo 전용] ROS-Gazebo Bridge (ros_ign_bridge 사용)
+    # 9. [Gazebo 전용] ROS-Gazebo Bridge (ros_gz_bridge 사용)
     bridge = Node(
-        package='ros_ign_bridge',
+        package='ros_gz_bridge',
         executable='parameter_bridge',
         # gz.msgs -> ignition.msgs 변경
         arguments=['/clock@rosgraph_msgs/msg/Clock[ignition.msgs.Clock'],
@@ -99,25 +99,29 @@ def generate_launch_description():
     joint_state_broadcaster_spawner = Node(
         package="controller_manager",
         executable="spawner",
-        arguments=["joint_state_broadcaster", "--controller-manager", "/controller_manager"],
+        arguments=["joint_state_broadcaster", "--controller-manager", "/controller_manager",
+                   "--service-call-timeout", "120"],
     )
 
     arm_controller_spawner = Node(
         package="controller_manager",
         executable="spawner",
-        arguments=["arm_controller", "--controller-manager", "/controller_manager"],
+        arguments=["arm_controller", "--controller-manager", "/controller_manager",
+                   "--service-call-timeout", "120"],
     )
 
     leg_controller_spawner = Node(
         package="controller_manager",
         executable="spawner",
-        arguments=["leg_controller", "--controller-manager", "/controller_manager"],
+        arguments=["leg_controller", "--controller-manager", "/controller_manager",
+                   "--service-call-timeout", "120"],
     )
 
     head_controller_spawner = Node(
         package="controller_manager",
         executable="spawner",
-        arguments=["head_controller", "--controller-manager", "/controller_manager"],
+        arguments=["head_controller", "--controller-manager", "/controller_manager",
+                   "--service-call-timeout", "120"],
     )
 
     # 12. 실행 순서 제어 (Delay)
