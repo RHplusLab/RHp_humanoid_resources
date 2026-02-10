@@ -209,7 +209,8 @@ static bool ReceiveResponse(int fd, uint8_t *resp, int max_resp) {
     } else if (ret < 0) {
       return false;
     } else if (ret == 0) {
-      // timeout
+      // timeout - no data received within VTIME period
+      return false;
     }
   }
 }

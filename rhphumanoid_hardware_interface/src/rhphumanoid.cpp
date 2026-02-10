@@ -33,7 +33,7 @@ const std::string MANUAL_MODE_ENABLE_FILE = "/tmp/rhphumanoid_enable_manual_mode
 const int FIRST_SET_MOVE_TIME = 1500;
 
 // 22 DOF
-const int NUM_JOINTS = 24;
+const int NUM_JOINTS = 22;
 
 // Fixed serial device
 const std::string SERIAL_DEV = "/dev/ttyRHP";
@@ -116,8 +116,8 @@ namespace rhphumanoid
 		joint_name_map_.insert(std::make_pair("r_wst", 21));
 		joint_name_map_.insert(std::make_pair("r_grp", 22));
 
-		joint_name_map_.insert(std::make_pair("head_pan", 23));
-		joint_name_map_.insert(std::make_pair("head_tilt", 24));
+		//joint_name_map_.insert(std::make_pair("head_pan", 23));
+		//joint_name_map_.insert(std::make_pair("head_tilt", 24));
 
 		// ===== Joint limits =====
 		//                          range_rad  min  max  mid  invert
@@ -211,6 +211,11 @@ namespace rhphumanoid
 			{
 				const std::string &name = joints[i];
 
+				// Skip joints not mapped to physical servos
+				if (joint_name_map_.find(name) == joint_name_map_.end()) {
+					continue;
+				}
+
 				int joint_pos = positionToJointValue(name, commands[i]);
 				if (joint_pos != last_pos_set_map_[name].pos)
 				{
@@ -239,6 +244,11 @@ namespace rhphumanoid
 		std::lock_guard<std::mutex> guard(mutex_);
 		for (uint i = 0; i < joints.size(); i++)
 		{
+			// Return 0.0 for joints not mapped to physical servos
+			if (joint_name_map_.find(joints[i]) == joint_name_map_.end()) {
+				positions.push_back(0.0);
+				continue;
+			}
 			positions.push_back(jointValueToPosition(joints[i], last_pos_get_map_[joints[i]].pos));
 			RCLCPP_DEBUG(rclcpp::get_logger("RHPHumanoidSystemHardware"), "Get cur pos %*s %s: %.5f",
 						 i * 8, "",
