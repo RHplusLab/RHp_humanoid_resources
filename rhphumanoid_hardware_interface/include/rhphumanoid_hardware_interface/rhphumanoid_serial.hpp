@@ -23,7 +23,9 @@ namespace rhphumanoid
 			bool setManualModeAll(bool enable, int count) override;
 			bool getJointLoadState(int id, uint16_t &state) override;
 			bool getJointLedError(int id, uint16_t &error) override;
+			bool getJointVin(int id, uint16_t &vin) override;
 			bool loadJoint(int id) override;
+			bool loadAllJoints() override;
 
 		private:
 			int fd_;

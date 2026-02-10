@@ -167,32 +167,68 @@ namespace rhphumanoid
 		// Read the initial positions before starting the thread
 		readJointPositions(last_pos_get_map_);
 
-		// Diagnose servo state and send LOAD command
+		// Diagnose servo state: check VIN, load state, then try LOAD
+		auto logger = rclcpp::get_logger("RHPHumanoidSystemHardware");
+
+		// Step 1: Read VIN (voltage) from first servo to check power supply
+		int first_id = joint_name_map_.begin()->second;
+		std::string first_name = joint_name_map_.begin()->first;
+		uint16_t vin = 0;
+		if (drvr_->getJointVin(first_id, vin)) {
+			RCLCPP_INFO(logger, "Servo %s (ID %d): VIN=%d mV", first_name.c_str(), first_id, vin);
+		} else {
+			RCLCPP_WARN(logger, "Failed to read VIN from servo %s (ID %d)", first_name.c_str(), first_id);
+		}
+
+		// Step 2: Read load state of first servo BEFORE LOAD
+		uint16_t load_before = 0;
+		if (drvr_->getJointLoadState(first_id, load_before)) {
+			RCLCPP_INFO(logger, "Servo %s (ID %d): load_state BEFORE LOAD = %d (raw=%d)",
+				first_name.c_str(), first_id, load_before & 0xFF, load_before);
+		}
+
+		// Step 3: Send individual LOAD to first servo and verify
+		drvr_->loadJoint(first_id);
+		usleep(10000); // 10ms wait for servo to process
+
+		uint16_t load_after = 0;
+		if (drvr_->getJointLoadState(first_id, load_after)) {
+			RCLCPP_INFO(logger, "Servo %s (ID %d): load_state AFTER individual LOAD = %d (raw=%d)",
+				first_name.c_str(), first_id, load_after & 0xFF, load_after);
+		}
+
+		// Step 4: If individual LOAD didn't work, try broadcast LOAD
+		if ((load_after & 0xFF) == 0) {
+			RCLCPP_WARN(logger, "Individual LOAD had no effect, trying broadcast LOAD (ID=254)...");
+			drvr_->loadAllJoints();
+			usleep(10000); // 10ms wait
+
+			uint16_t load_broadcast = 0;
+			if (drvr_->getJointLoadState(first_id, load_broadcast)) {
+				RCLCPP_INFO(logger, "Servo %s (ID %d): load_state AFTER broadcast LOAD = %d (raw=%d)",
+					first_name.c_str(), first_id, load_broadcast & 0xFF, load_broadcast);
+			}
+		}
+
+		// Step 5: Send LOAD to all servos individually
+		RCLCPP_INFO(logger, "Sending LOAD to all %d servos...", (int)joint_name_map_.size());
 		for (auto const &j : joint_name_map_) {
-			int joint_id = j.second;
-			std::string name = j.first;
-
-			uint16_t load_state = 0;
-			if (drvr_->getJointLoadState(joint_id, load_state)) {
-				RCLCPP_INFO(rclcpp::get_logger("RHPHumanoidSystemHardware"),
-					"Servo %s (ID %d): load_state=%d", name.c_str(), joint_id, load_state);
-			} else {
-				RCLCPP_WARN(rclcpp::get_logger("RHPHumanoidSystemHardware"),
-					"Servo %s (ID %d): failed to read load state", name.c_str(), joint_id);
+			if (!drvr_->loadJoint(j.second)) {
+				RCLCPP_WARN(logger, "Servo %s (ID %d): LOAD command failed",
+					j.first.c_str(), j.second);
 			}
+			usleep(2000); // 2ms inter-command gap
+		}
 
-			uint16_t error = 0;
-			if (drvr_->getJointLedError(joint_id, error)) {
-				RCLCPP_INFO(rclcpp::get_logger("RHPHumanoidSystemHardware"),
-					"Servo %s (ID %d): error_flags=%d", name.c_str(), joint_id, error);
+		// Step 6: Verify load state of a few servos after loading all
+		usleep(10000); // 10ms settle time
+		for (auto const &j : joint_name_map_) {
+			uint16_t ls = 0;
+			if (drvr_->getJointLoadState(j.second, ls)) {
+				RCLCPP_INFO(logger, "Servo %s (ID %d): final load_state=%d",
+					j.first.c_str(), j.second, ls & 0xFF);
 			}
-
-			// Send explicit LOAD command
-			if (!drvr_->loadJoint(joint_id)) {
-				RCLCPP_WARN(rclcpp::get_logger("RHPHumanoidSystemHardware"),
-					"Servo %s (ID %d): LOAD command failed", name.c_str(), joint_id);
-			}
-			usleep(1000); // 1ms inter-command gap
+			usleep(1000);
 		}
 
 		run_ = true;

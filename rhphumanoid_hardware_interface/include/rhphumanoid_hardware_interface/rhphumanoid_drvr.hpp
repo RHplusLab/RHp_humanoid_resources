@@ -21,7 +21,9 @@ namespace rhphumanoid
 			virtual bool setManualModeAll(bool enable, int count) = 0;
 			virtual bool getJointLoadState(int id, uint16_t &state) = 0;
 			virtual bool getJointLedError(int id, uint16_t &error) = 0;
+			virtual bool getJointVin(int id, uint16_t &vin) = 0;
 			virtual bool loadJoint(int id) = 0;
+			virtual bool loadAllJoints() = 0;
 	};
 }
 

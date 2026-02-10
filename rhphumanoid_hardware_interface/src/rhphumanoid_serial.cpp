@@ -141,9 +141,19 @@ namespace rhphumanoid
 		return LobotSerialServoReadLedError(fd_, id, error);
 	}
 
+	bool rhphumanoid_serial::getJointVin(int id, uint16_t &vin)
+	{
+		return LobotSerialServoReadVin(fd_, id, vin);
+	}
+
 	bool rhphumanoid_serial::loadJoint(int id)
 	{
 		return LobotSerialServoLoad(fd_, id);
+	}
+
+	bool rhphumanoid_serial::loadAllJoints()
+	{
+		return LobotSerialServoLoad(fd_, 254);
 	}
 
 	bool rhphumanoid_serial::setManualModeAll(bool enable, int count)
