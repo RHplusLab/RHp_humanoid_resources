@@ -33,7 +33,7 @@ const std::string MANUAL_MODE_ENABLE_FILE = "/tmp/rhphumanoid_enable_manual_mode
 const int FIRST_SET_MOVE_TIME = 1500;
 
 // 22 DOF
-const int NUM_JOINTS = 22;
+const int NUM_JOINTS = 24;
 
 // Fixed serial device
 const std::string SERIAL_DEV = "/dev/ttyRHP";
@@ -116,8 +116,8 @@ namespace rhphumanoid
 		joint_name_map_.insert(std::make_pair("r_wst", 21));
 		joint_name_map_.insert(std::make_pair("r_grp", 22));
 
-		//joint_name_map_.insert(std::make_pair("head_pan", 23));
-		//joint_name_map_.insert(std::make_pair("head_tilt", 24));
+		joint_name_map_.insert(std::make_pair("head_pan", 23));
+		joint_name_map_.insert(std::make_pair("head_tilt", 24));
 
 		// ===== Joint limits =====
 		//                          range_rad  min  max  mid  invert
@@ -147,8 +147,8 @@ namespace rhphumanoid
 		joint_range_limits_["r_ank_pitch"] = {RAD_RANGE, 0, 1000, 500, 1};
 		joint_range_limits_["r_ank_roll"]  = {RAD_RANGE, 0, 1000, 500, 1};
 
-		//joint_range_limits_["head_pan"]  = {RAD_RANGE, 0, 1000, 500, 1};
-		//joint_range_limits_["head_tilt"] = {RAD_RANGE, 0, 1000, 500, 1};
+		joint_range_limits_["head_pan"]  = {RAD_RANGE, 0, 1000, 500, 1};
+		joint_range_limits_["head_tilt"] = {RAD_RANGE, 0, 1000, 500, 1};
 
 		RCLCPP_INFO(rclcpp::get_logger("RHPHumanoidSystemHardware"), "Joint limits:");
 		for (const auto &j : joint_name_map_)
@@ -166,6 +166,34 @@ namespace rhphumanoid
 
 		// Read the initial positions before starting the thread
 		readJointPositions(last_pos_get_map_);
+
+		// Diagnose servo state and send LOAD command
+		for (auto const &j : joint_name_map_) {
+			int joint_id = j.second;
+			std::string name = j.first;
+
+			uint16_t load_state = 0;
+			if (drvr_->getJointLoadState(joint_id, load_state)) {
+				RCLCPP_INFO(rclcpp::get_logger("RHPHumanoidSystemHardware"),
+					"Servo %s (ID %d): load_state=%d", name.c_str(), joint_id, load_state);
+			} else {
+				RCLCPP_WARN(rclcpp::get_logger("RHPHumanoidSystemHardware"),
+					"Servo %s (ID %d): failed to read load state", name.c_str(), joint_id);
+			}
+
+			uint16_t error = 0;
+			if (drvr_->getJointLedError(joint_id, error)) {
+				RCLCPP_INFO(rclcpp::get_logger("RHPHumanoidSystemHardware"),
+					"Servo %s (ID %d): error_flags=%d", name.c_str(), joint_id, error);
+			}
+
+			// Send explicit LOAD command
+			if (!drvr_->loadJoint(joint_id)) {
+				RCLCPP_WARN(rclcpp::get_logger("RHPHumanoidSystemHardware"),
+					"Servo %s (ID %d): LOAD command failed", name.c_str(), joint_id);
+			}
+			usleep(1000); // 1ms inter-command gap
+		}
 
 		run_ = true;
 		thread_ = std::thread{std::bind(&rhphumanoid::Process, this)};
@@ -371,6 +399,7 @@ namespace rhphumanoid
 									joint.c_str(), set_pos, set_pos - pos_map[joint].pos);
 
 						setJointPosition(joint, set_pos, first_set ? FIRST_SET_MOVE_TIME : UPDATE_PERIOD_MOVING_MS);
+						usleep(1000); // 1ms gap between consecutive write commands
 					}
 				}
 				first_set = false;

@@ -217,6 +217,8 @@ static bool ReceiveResponse(int fd, uint8_t *resp, int max_resp) {
 static bool ReadCommand2ByteReturn(int fd, uint8_t id, uint8_t cmd,
                                    uint16_t &val) {
   val = -2048;
+  // Flush stale RX data before sending read request
+  tcflush(fd, TCIFLUSH);
   const int msgLen = 6;
   uint8_t buf[msgLen];
   buf[0] = buf[1] = LOBOT_SERVO_FRAME_HEADER;
@@ -240,4 +242,12 @@ bool LobotSerialServoReadPosition(int fd, uint8_t id, uint16_t &position) {
 
 bool LobotSerialServoReadVin(int fd, uint8_t id, uint16_t &vin) {
   return ReadCommand2ByteReturn(fd, id, LOBOT_SERVO_VIN_READ, vin);
+}
+
+bool LobotSerialServoReadLoadState(int fd, uint8_t id, uint16_t &state) {
+  return ReadCommand2ByteReturn(fd, id, LOBOT_SERVO_LOAD_OR_UNLOAD_READ, state);
+}
+
+bool LobotSerialServoReadLedError(int fd, uint8_t id, uint16_t &error) {
+  return ReadCommand2ByteReturn(fd, id, LOBOT_SERVO_LED_ERROR_READ, error);
 }

@@ -13,5 +13,7 @@ bool LobotSerialServoUnload(int fd, uint8_t id);
 
 bool LobotSerialServoReadPosition(int fd, uint8_t id, uint16_t &position);
 bool LobotSerialServoReadVin(int fd, uint8_t id, uint16_t &vin);
+bool LobotSerialServoReadLoadState(int fd, uint8_t id, uint16_t &state);
+bool LobotSerialServoReadLedError(int fd, uint8_t id, uint16_t &error);
 
 #endif // SERIAL_SERVO_BUS__H

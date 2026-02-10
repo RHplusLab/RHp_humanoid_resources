@@ -59,6 +59,7 @@ hardware_interface::CallbackReturn RHPHumanoidSystemHardware::on_init(
   }
 
   // 2. Initial Value 설정
+  joint_initial_value.resize(info_.joints.size(), 0.0);
   for(int i = 0; i < (int)info_.joints.size(); i++){
     if (!info_.joints[i].state_interfaces[0].initial_value.empty()) {
         joint_initial_value[i] = stod(info_.joints[i].state_interfaces[0].initial_value);
