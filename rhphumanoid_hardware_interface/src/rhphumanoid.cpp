@@ -303,6 +303,7 @@ namespace rhphumanoid
 		int ck_for_idle_cnt = 0;
 		PositionMap pos_map;
 		bool first_set = true;
+		bool initial_read_done = false;
 
 		while (run_)
 		{
@@ -391,18 +392,31 @@ namespace rhphumanoid
 
 			// Don't read while moving since it causes jerks in the motion. Update after commands stop.
 			if (!new_cmd && --read_pos_delay_cnt <= 0)
-			{
-				read_pos_delay_cnt = 5;
-				{
-					std::lock_guard<std::mutex> guard(mutex_);
-					pos_map = last_pos_get_map_;
-				}
-				readJointPositions(pos_map);
-				{
-					std::lock_guard<std::mutex> guard(mutex_);
-					last_pos_get_map_ = pos_map;
-				}
-			}
+            {
+                read_pos_delay_cnt = 5;
+
+                // [변경] 아직 한 번도 안 읽었을 때만(false일 때만) 진입
+                if (!initial_read_done)
+                {
+                    RCLCPP_INFO(rclcpp::get_logger("RHPHumanoidSystemHardware"), "Performing INITIAL hardware check...");
+
+                    {
+                        std::lock_guard<std::mutex> guard(mutex_);
+                        pos_map = last_pos_get_map_;
+                    }
+                    
+                    readJointPositions(pos_map); // 하드웨어 읽기 실행
+
+                    {
+                        std::lock_guard<std::mutex> guard(mutex_);
+                        last_pos_get_map_ = pos_map;
+                    }
+
+                    // [중요] 읽기 완료 처리 -> 이후 루프부터는 이 블록 실행 안 함
+                    initial_read_done = true; 
+                    RCLCPP_INFO(rclcpp::get_logger("RHPHumanoidSystemHardware"), "Initial check DONE. Switching to WRITE-ONLY mode.");
+                }
+            }
 
 			next_update_time += std::chrono::milliseconds(idle ? UPDATE_PERIOD_IDLE_MS : UPDATE_PERIOD_MOVING_MS);
 			std::this_thread::sleep_until(next_update_time);
