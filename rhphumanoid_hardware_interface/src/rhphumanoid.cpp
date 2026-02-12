@@ -19,11 +19,11 @@ namespace {
 
   // Timing configuration
   using namespace std::chrono_literals;
-  constexpr auto UPDATE_PERIOD_MOVING = 10ms;
+  constexpr auto UPDATE_PERIOD_MOVING = 20ms;
   constexpr auto UPDATE_PERIOD_IDLE = 100ms;
 
   constexpr int IDLE_ENTRY_CNT = 50;
-  constexpr int FIRST_SET_MOVE_TIME = 1500;
+  constexpr int FIRST_SET_MOVE_TIME = 2000;
 
   // Manual mode configuration
   constexpr int UPDATE_CNT_CHK_FOR_MANUAL_MODE = (2000 / 100);
