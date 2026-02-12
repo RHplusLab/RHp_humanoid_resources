@@ -368,7 +368,16 @@ void rhphumanoid::Process()
 
         {
           std::lock_guard<std::mutex> guard(mutex_);
-          last_pos_get_map_ = local_pos_map;
+
+          if (!new_cmd_)
+					{
+						last_pos_get_map_ = local_pos_map;
+					}
+					else
+					{
+						RCLCPP_WARN(rclcpp::get_logger("RHPHumanoidSystemHardware"),
+												"Race condition detected! New command received during read. Discarding read result.");
+					}
         }
 
         initial_read_done = true;
