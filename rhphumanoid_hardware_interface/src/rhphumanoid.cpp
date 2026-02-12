@@ -126,6 +126,35 @@ bool rhphumanoid::init()
   // Initial position read
   readJointPositions(last_pos_get_map_);
 
+  // =========================================================================
+  // [ADDED FEATURE] Check for disconnected motors and abort if any failed
+  // =========================================================================
+  std::vector<std::string> failed_joints;
+  for (const auto & [name, id] : joint_name_map_) {
+    // If position is still INVALID_POS, communication failed
+    if (last_pos_get_map_[name].pos == INVALID_POS) {
+      failed_joints.push_back("ID: " + std::to_string(id) + " (" + name + ")");
+    }
+  }
+
+  if (!failed_joints.empty()) {
+    RCLCPP_FATAL(rclcpp::get_logger("RHPHumanoidSystemHardware"), "============================================");
+    RCLCPP_FATAL(rclcpp::get_logger("RHPHumanoidSystemHardware"), "!!! MOTOR COMMUNICATION FAILURE DETECTED !!!");
+    RCLCPP_FATAL(rclcpp::get_logger("RHPHumanoidSystemHardware"), "The following motors are NOT responding:");
+
+    for (const auto & error_msg : failed_joints) {
+      RCLCPP_FATAL(rclcpp::get_logger("RHPHumanoidSystemHardware"), "  -> %s", error_msg.c_str());
+    }
+
+    RCLCPP_FATAL(rclcpp::get_logger("RHPHumanoidSystemHardware"), "Please check the wiring for the motors listed above.");
+    RCLCPP_FATAL(rclcpp::get_logger("RHPHumanoidSystemHardware"), "System initialization ABORTED to prevent damage.");
+    RCLCPP_FATAL(rclcpp::get_logger("RHPHumanoidSystemHardware"), "============================================");
+
+    // Stop initialization here
+    return false;
+  }
+  // =========================================================================
+
   run_ = true;
   thread_ = std::thread(&rhphumanoid::Process, this);
 
