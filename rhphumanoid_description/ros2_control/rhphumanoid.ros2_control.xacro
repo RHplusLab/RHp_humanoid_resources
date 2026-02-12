@@ -20,13 +20,13 @@
       <joint name="l_sho_pitch">
         <command_interface name="position"/>
         <state_interface name="position">
-          <param name="initial_value">0.53</param>
+          <param name="initial_value">0.15</param>
         </state_interface>
       </joint>
       <joint name="l_sho_roll">
         <command_interface name="position"/>
         <state_interface name="position">
-          <param name="initial_value">-1.30</param>
+          <param name="initial_value">-1.45</param>
         </state_interface>
       </joint>
       <joint name="l_el">
@@ -38,7 +38,7 @@
       <joint name="l_wst">
         <command_interface name="position"/>
         <state_interface name="position">
-          <param name="initial_value">-1.22</param>
+          <param name="initial_value">-0.5</param>
         </state_interface>
       </joint>
       <joint name="l_grp">
@@ -51,13 +51,13 @@
       <joint name="r_sho_pitch">
         <command_interface name="position"/>
         <state_interface name="position">
-          <param name="initial_value">-0.53</param>
+          <param name="initial_value">-0.15</param>
         </state_interface>
       </joint>
       <joint name="r_sho_roll">
         <command_interface name="position"/>
         <state_interface name="position">
-          <param name="initial_value">1.30</param>
+          <param name="initial_value">1.45</param>
         </state_interface>
       </joint>
       <joint name="r_el">
@@ -69,7 +69,7 @@
       <joint name="r_wst">
         <command_interface name="position"/>
         <state_interface name="position">
-          <param name="initial_value">1.22</param>
+          <param name="initial_value">0.5</param>
         </state_interface>
       </joint>
       <joint name="r_grp">
