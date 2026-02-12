@@ -99,7 +99,19 @@ bool rhphumanoid::init()
 
   for (const auto & [name, id] : joint_defs) {
     joint_name_map_[name] = id;
-    joint_range_limits_[name] = DEFAULT_LIMIT;
+
+		// [수정된 부분] -----------------------------------------------------
+    // 1. 기본 Limit 설정을 복사합니다.
+    JointLimit current_limit = DEFAULT_LIMIT;
+
+    // 2. r_wst 관절인 경우에만 방향(invert_factor)을 -1로 변경합니다.
+    if (name == "r_wst") {
+        current_limit.invert_factor = -1;
+    }
+
+    // 3. 수정된 설정을 맵에 저장합니다.
+    joint_range_limits_[name] = current_limit;
+    // ------------------------------------------------------------------
 
     last_pos_set_map_[name] = {INVALID_POS, false};
     last_pos_get_map_[name] = {INVALID_POS, false};

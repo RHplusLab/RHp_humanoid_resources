@@ -63,7 +63,7 @@ private:
   double hw_start_sec_;
   double hw_stop_sec_;
   double hw_slowdown_;
-  double joint_initial_value[7];
+  double joint_initial_value[22];
 
   // Store the command for the simulated robot
   std::vector<double> hw_commands_;
