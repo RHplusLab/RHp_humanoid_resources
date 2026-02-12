@@ -1,81 +1,93 @@
+#ifndef RHPHUMANOID_HARDWARE_INTERFACE__RHPHUMANOID_HPP_
+#define RHPHUMANOID_HARDWARE_INTERFACE__RHPHUMANOID_HPP_
 
-#ifndef RHPHUMANOID__H
-#define RHPHUMANOID__H
-#include <hidapi/hidapi.h>
-#include <sstream>
+#include <atomic>
 #include <map>
-#include <vector>
-#include <thread>
+#include <memory>
 #include <mutex>
+#include <string>
+#include <thread>
+#include <vector>
 
-#include "rhphumanoid_hardware_interface/rhphumanoid_drvr.hpp"
+#include "rclcpp/rclcpp.hpp"
 
 namespace rhphumanoid
 {
-	class rhphumanoid
-	{
-		struct JointRangeLimits {
-			float range_rad;	// Range in radians corresponding to max-min servo units
-			int min;			// Range min, servo units
-			int max;			// Range max, servo units
-			int mid;			// Range min, servo units
-			int invert_factor;	// 1 or -1 to invert range
-		};
 
-		struct Position {
-			int pos;			// Last position
-			bool changed;		// True if position changed
-		};
+// Forward declaration MUST be inside the namespace
+class rhphumanoid_serial;
+// class rhphumanoid_usb; // If needed later
 
-		using PositionMap = std::map<std::string, struct Position>;
+struct JointLimit
+{
+  double range_rad;
+  int min;
+  int max;
+  int mid;
+  int invert_factor; // 1 or -1
+};
 
-		public:
-			rhphumanoid();
-			~rhphumanoid();
+struct JointState
+{
+  int pos;
+  bool changed;
+};
 
-			bool init();
+class rhphumanoid
+{
+public:
+  rhphumanoid();
+  virtual ~rhphumanoid();
 
-			void setAllJointPositions(const std::vector<double> &commands, const std::vector<std::string> &joints);
-			void getAllJointPositions(std::vector<double> &positions, const std::vector<std::string> &joints);
+  bool init();
 
-		private:
-			void Process();
+  // Thread function
+  void Process();
 
-			double jointValueToPosition(std::string joint_name, int jointValue);
-			int positionToJointValue(std::string joint_name, double position);
+  // Joint Command Interface
+  void setAllJointPositions(const std::vector<double> & commands, const std::vector<std::string> & joints);
+  void getAllJointPositions(std::vector<double> & positions, const std::vector<std::string> & joints);
 
-			double convertUnitToRad(std::string joint_name, int unit);
-			int convertRadToUnit(std::string joint_name, double rad);
+private:
+  // Internal Helpers
+  double jointValueToPosition(const std::string & joint_name, int jointValue);
+  int positionToJointValue(const std::string & joint_name, double position);
+  int convertRadToUnit(const std::string & joint_name, double rad);
+  double convertUnitToRad(const std::string & joint_name, int unit);
 
-			void readJointPositions(PositionMap &pos_map);
-			void setJointPosition(std::string joint_name, int position, int time);
+  void readJointPositions(std::map<std::string, JointState> & pos_map);
+  void setJointPosition(const std::string & joint_name, int position, int time);
 
-			void set_manual_mode(bool enable);
-			bool manual_mode_enabled();
+  bool manual_mode_enabled();
+  void set_manual_mode(bool enable);
 
-			bool inited_;
-			bool run_;
+  // Members (Declaration order matches initialization order to prevent -Wreorder)
+  bool inited_;
+  std::atomic<bool> run_;
 
-			std::unique_ptr<rhphumanoid_drvr> drvr_;
+  std::unique_ptr<rhphumanoid_serial> drvr_;
 
-			std::mutex mutex_;
-			std::thread thread_;
+  std::thread thread_;
+  std::mutex mutex_;
 
-			std::map<std::string, int> joint_name_map_;
-			std::map<std::string, struct JointRangeLimits> joint_range_limits_;
+  // Mappings
+  std::map<std::string, int> joint_name_map_;
+  std::map<std::string, JointLimit> joint_range_limits_;
 
-			// Map of joint to the last position set on the joint (in rhphumanoid units)
-			PositionMap last_pos_set_map_;
-			// Map of joint to the last position status read for the joint (in rhphumanoid units)
-			PositionMap last_pos_get_map_;
+  // State Storage
+  std::map<std::string, JointState> last_pos_set_map_;
+  std::map<std::string, JointState> last_pos_get_map_;
 
-			double gripper_pos_min_m_;
-			double gripper_pos_min_s_;
-			double gripper_pos_max_s_;
-			double gripper_pos_m_to_s_factor_;
+  // Gripper params
+  double gripper_pos_min_m_;
+  double gripper_pos_min_s_;
+  double gripper_pos_max_s_;
+  double gripper_pos_m_to_s_factor_;
 
-			bool new_cmd_;
-	};
-}
+  // Flags
+  bool new_cmd_;
+};
 
-#endif
+} // namespace rhphumanoid
+
+#endif // RHPHUMANOID_HARDWARE_INTERFACE__RHPHUMANOID_HPP_
