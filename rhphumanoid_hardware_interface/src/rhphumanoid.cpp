@@ -24,6 +24,7 @@ namespace {
 
   constexpr int IDLE_ENTRY_CNT = 50;
   constexpr int FIRST_SET_MOVE_TIME = 2000;
+  constexpr int READ_POS_SKIP_COUNT = 5;
 
   // Manual mode configuration
   constexpr int UPDATE_CNT_CHK_FOR_MANUAL_MODE = (2000 / 100);
@@ -165,10 +166,14 @@ bool rhphumanoid::init()
 void rhphumanoid::setAllJointPositions(const std::vector<double> & commands, const std::vector<std::string> & joints)
 {
   if (commands.empty() || commands.size() != joints.size()) return;
-  if (!std::isfinite(commands[0])) {
-    std::lock_guard<std::mutex> guard(mutex_);
-    new_cmd_ = false;
-    return;
+
+  for (double cmd : commands) {
+    if (!std::isfinite(cmd)) {
+      // Use standard error logging since get_clock() might not be available or reliable in this context
+      RCLCPP_WARN(rclcpp::get_logger("RHPHumanoidSystemHardware"),
+        "NaN or Infinite command detected. Ignoring all.");
+      return;
+    }
   }
 
   std::lock_guard<std::mutex> guard(mutex_);
@@ -210,24 +215,24 @@ void rhphumanoid::getAllJointPositions(std::vector<double> & positions, const st
 
 int rhphumanoid::convertRadToUnit(const std::string & joint_name, double rad)
 {
-  try {
-    const auto & limit = joint_range_limits_.at(joint_name);
-    double range = static_cast<double>(limit.max - limit.min);
-    return static_cast<int>((range * rad / limit.range_rad * limit.invert_factor) + limit.mid);
-  } catch (...) {
+  auto it = joint_range_limits_.find(joint_name);
+  if (it == joint_range_limits_.end()) {
     return 0;
   }
+  const auto & limit = it->second;
+  double range = static_cast<double>(limit.max - limit.min);
+  return static_cast<int>((range * rad / limit.range_rad * limit.invert_factor) + limit.mid);
 }
 
 double rhphumanoid::convertUnitToRad(const std::string & joint_name, int unit)
 {
-  try {
-    const auto & limit = joint_range_limits_.at(joint_name);
-    double range = static_cast<double>(limit.max - limit.min);
-    return (static_cast<double>(unit - limit.mid) * limit.range_rad * limit.invert_factor) / range;
-  } catch (...) {
+  auto it = joint_range_limits_.find(joint_name);
+  if (it == joint_range_limits_.end()) {
     return 0.0;
   }
+  const auto & limit = it->second;
+  double range = static_cast<double>(limit.max - limit.min);
+  return (static_cast<double>(unit - limit.mid) * limit.range_rad * limit.invert_factor) / range;
 }
 
 double rhphumanoid::jointValueToPosition(const std::string & joint_name, int jointValue)
@@ -295,8 +300,13 @@ void rhphumanoid::Process()
   int read_pos_delay_cnt = 0;
   std::map<std::string, JointState> local_pos_map;
 
+  // Initial time setup before loop
+  auto next_update_time = std::chrono::steady_clock::now();
+
   while (run_) {
-    auto next_update_time = std::chrono::steady_clock::now();
+    // Determine the period based on idle state
+    auto period = idle ? UPDATE_PERIOD_IDLE : UPDATE_PERIOD_MOVING;
+    next_update_time += period;
 
     // 1. Check Manual Mode Logic
     if (idle && --ck_for_manual_mode_cnt <= 0) {
@@ -354,7 +364,7 @@ void rhphumanoid::Process()
 
     // 3. Hardware Initial Read Check
     if (!has_new_cmd && --read_pos_delay_cnt <= 0) {
-      read_pos_delay_cnt = 5;
+      read_pos_delay_cnt = READ_POS_SKIP_COUNT;
 
       if (!initial_read_done) {
         RCLCPP_INFO(rclcpp::get_logger("RHPHumanoidSystemHardware"), "Performing INITIAL hardware check...");
@@ -385,8 +395,6 @@ void rhphumanoid::Process()
       }
     }
 
-    auto period = idle ? UPDATE_PERIOD_IDLE : UPDATE_PERIOD_MOVING;
-    next_update_time += period;
     std::this_thread::sleep_until(next_update_time);
   }
 }
