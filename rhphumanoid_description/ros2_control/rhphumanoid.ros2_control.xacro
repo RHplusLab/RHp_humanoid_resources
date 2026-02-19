@@ -3,170 +3,363 @@
 
   <xacro:macro name="rhphumanoid_ros2_control" params="name use_gazebo:=^|false">
 
-    <ros2_control name="${name}" type="system">
-      <hardware>
-        <xacro:if value="${use_gazebo}">
+    <!-- ============================================================== -->
+    <!-- GAZEBO SIMULATION: single system with all 24 joints            -->
+    <!-- ============================================================== -->
+    <xacro:if value="${use_gazebo}">
+      <ros2_control name="${name}" type="system">
+        <hardware>
           <plugin>gz_ros2_control/GazeboSimSystem</plugin>
-        </xacro:if>
+        </hardware>
 
-        <xacro:unless value="${use_gazebo}">
+        <!-- Left Arm -->
+        <joint name="l_sho_pitch">
+          <command_interface name="position"/>
+          <state_interface name="position">
+            <param name="initial_value">0.15</param>
+          </state_interface>
+        </joint>
+        <joint name="l_sho_roll">
+          <command_interface name="position"/>
+          <state_interface name="position">
+            <param name="initial_value">-1.45</param>
+          </state_interface>
+        </joint>
+        <joint name="l_el">
+          <command_interface name="position"/>
+          <state_interface name="position">
+            <param name="initial_value">0.0</param>
+          </state_interface>
+        </joint>
+        <joint name="l_wst">
+          <command_interface name="position"/>
+          <state_interface name="position">
+            <param name="initial_value">-0.5</param>
+          </state_interface>
+        </joint>
+        <joint name="l_grp">
+          <command_interface name="position"/>
+          <state_interface name="position">
+            <param name="initial_value">0.0</param>
+          </state_interface>
+        </joint>
+
+        <!-- Right Arm -->
+        <joint name="r_sho_pitch">
+          <command_interface name="position"/>
+          <state_interface name="position">
+            <param name="initial_value">-0.15</param>
+          </state_interface>
+        </joint>
+        <joint name="r_sho_roll">
+          <command_interface name="position"/>
+          <state_interface name="position">
+            <param name="initial_value">1.45</param>
+          </state_interface>
+        </joint>
+        <joint name="r_el">
+          <command_interface name="position"/>
+          <state_interface name="position">
+            <param name="initial_value">0.0</param>
+          </state_interface>
+        </joint>
+        <joint name="r_wst">
+          <command_interface name="position"/>
+          <state_interface name="position">
+            <param name="initial_value">0.5</param>
+          </state_interface>
+        </joint>
+        <joint name="r_grp">
+          <command_interface name="position"/>
+          <state_interface name="position">
+            <param name="initial_value">0.0</param>
+          </state_interface>
+        </joint>
+
+        <!-- Left Leg -->
+        <joint name="l_hip_yaw">
+          <command_interface name="position"/>
+          <state_interface name="position">
+            <param name="initial_value">0.0</param>
+          </state_interface>
+        </joint>
+        <joint name="l_hip_roll">
+          <command_interface name="position"/>
+          <state_interface name="position">
+            <param name="initial_value">0.0</param>
+          </state_interface>
+        </joint>
+        <joint name="l_hip_pitch">
+          <command_interface name="position"/>
+          <state_interface name="position">
+            <param name="initial_value">0.0</param>
+          </state_interface>
+        </joint>
+        <joint name="l_knee">
+          <command_interface name="position"/>
+          <state_interface name="position">
+            <param name="initial_value">0.0</param>
+          </state_interface>
+        </joint>
+        <joint name="l_ank_pitch">
+          <command_interface name="position"/>
+          <state_interface name="position">
+            <param name="initial_value">0.0</param>
+          </state_interface>
+        </joint>
+        <joint name="l_ank_roll">
+          <command_interface name="position"/>
+          <state_interface name="position">
+            <param name="initial_value">0.0</param>
+          </state_interface>
+        </joint>
+
+        <!-- Right Leg -->
+        <joint name="r_hip_yaw">
+          <command_interface name="position"/>
+          <state_interface name="position">
+            <param name="initial_value">0.0</param>
+          </state_interface>
+        </joint>
+        <joint name="r_hip_roll">
+          <command_interface name="position"/>
+          <state_interface name="position">
+            <param name="initial_value">0.0</param>
+          </state_interface>
+        </joint>
+        <joint name="r_hip_pitch">
+          <command_interface name="position"/>
+          <state_interface name="position">
+            <param name="initial_value">0.0</param>
+          </state_interface>
+        </joint>
+        <joint name="r_knee">
+          <command_interface name="position"/>
+          <state_interface name="position">
+            <param name="initial_value">0.0</param>
+          </state_interface>
+        </joint>
+        <joint name="r_ank_pitch">
+          <command_interface name="position"/>
+          <state_interface name="position">
+            <param name="initial_value">0.0</param>
+          </state_interface>
+        </joint>
+        <joint name="r_ank_roll">
+          <command_interface name="position"/>
+          <state_interface name="position">
+            <param name="initial_value">0.0</param>
+          </state_interface>
+        </joint>
+
+        <!-- Head -->
+        <joint name="head_pan">
+          <command_interface name="position"/>
+          <state_interface name="position">
+            <param name="initial_value">0.0</param>
+          </state_interface>
+        </joint>
+        <joint name="head_tilt">
+          <command_interface name="position"/>
+          <state_interface name="position">
+            <param name="initial_value">0.0</param>
+          </state_interface>
+        </joint>
+
+      </ros2_control>
+    </xacro:if>
+
+    <!-- ============================================================== -->
+    <!-- REAL HARDWARE: body system (22 DOF serial bus)                  -->
+    <!-- ============================================================== -->
+    <xacro:unless value="${use_gazebo}">
+      <ros2_control name="body_hardware" type="system">
+        <hardware>
           <plugin>rhphumanoid_hardware/RHPHumanoidSystemHardware</plugin>
           <param name="example_param_hw_start_duration_sec">0.0</param>
           <param name="example_param_hw_stop_duration_sec">2.0</param>
           <param name="example_param_hw_slowdown">10.0</param>
-        </xacro:unless>
-      </hardware>
+        </hardware>
 
-      <joint name="l_sho_pitch">
-        <command_interface name="position"/>
-        <state_interface name="position">
-          <param name="initial_value">0.15</param>
-        </state_interface>
-      </joint>
-      <joint name="l_sho_roll">
-        <command_interface name="position"/>
-        <state_interface name="position">
-          <param name="initial_value">-1.45</param>
-        </state_interface>
-      </joint>
-      <joint name="l_el">
-        <command_interface name="position"/>
-        <state_interface name="position">
-          <param name="initial_value">0.0</param>
-        </state_interface>
-      </joint>
-      <joint name="l_wst">
-        <command_interface name="position"/>
-        <state_interface name="position">
-          <param name="initial_value">-0.5</param>
-        </state_interface>
-      </joint>
-      <joint name="l_grp">
-        <command_interface name="position"/>
-        <state_interface name="position">
-          <param name="initial_value">0.0</param>
-        </state_interface>
-      </joint>
+        <!-- Left Arm -->
+        <joint name="l_sho_pitch">
+          <command_interface name="position"/>
+          <state_interface name="position">
+            <param name="initial_value">0.15</param>
+          </state_interface>
+        </joint>
+        <joint name="l_sho_roll">
+          <command_interface name="position"/>
+          <state_interface name="position">
+            <param name="initial_value">-1.45</param>
+          </state_interface>
+        </joint>
+        <joint name="l_el">
+          <command_interface name="position"/>
+          <state_interface name="position">
+            <param name="initial_value">0.0</param>
+          </state_interface>
+        </joint>
+        <joint name="l_wst">
+          <command_interface name="position"/>
+          <state_interface name="position">
+            <param name="initial_value">-0.5</param>
+          </state_interface>
+        </joint>
+        <joint name="l_grp">
+          <command_interface name="position"/>
+          <state_interface name="position">
+            <param name="initial_value">0.0</param>
+          </state_interface>
+        </joint>
 
-      <joint name="r_sho_pitch">
-        <command_interface name="position"/>
-        <state_interface name="position">
-          <param name="initial_value">-0.15</param>
-        </state_interface>
-      </joint>
-      <joint name="r_sho_roll">
-        <command_interface name="position"/>
-        <state_interface name="position">
-          <param name="initial_value">1.45</param>
-        </state_interface>
-      </joint>
-      <joint name="r_el">
-        <command_interface name="position"/>
-        <state_interface name="position">
-          <param name="initial_value">0.0</param>
-        </state_interface>
-      </joint>
-      <joint name="r_wst">
-        <command_interface name="position"/>
-        <state_interface name="position">
-          <param name="initial_value">0.5</param>
-        </state_interface>
-      </joint>
-      <joint name="r_grp">
-        <command_interface name="position"/>
-        <state_interface name="position">
-          <param name="initial_value">0.0</param>
-        </state_interface>
-      </joint>
+        <!-- Right Arm -->
+        <joint name="r_sho_pitch">
+          <command_interface name="position"/>
+          <state_interface name="position">
+            <param name="initial_value">-0.15</param>
+          </state_interface>
+        </joint>
+        <joint name="r_sho_roll">
+          <command_interface name="position"/>
+          <state_interface name="position">
+            <param name="initial_value">1.45</param>
+          </state_interface>
+        </joint>
+        <joint name="r_el">
+          <command_interface name="position"/>
+          <state_interface name="position">
+            <param name="initial_value">0.0</param>
+          </state_interface>
+        </joint>
+        <joint name="r_wst">
+          <command_interface name="position"/>
+          <state_interface name="position">
+            <param name="initial_value">0.5</param>
+          </state_interface>
+        </joint>
+        <joint name="r_grp">
+          <command_interface name="position"/>
+          <state_interface name="position">
+            <param name="initial_value">0.0</param>
+          </state_interface>
+        </joint>
 
-      <joint name="l_hip_yaw">
-        <command_interface name="position"/>
-        <state_interface name="position">
-          <param name="initial_value">0.0</param>
-        </state_interface>
-      </joint>
-      <joint name="l_hip_roll">
-        <command_interface name="position"/>
-        <state_interface name="position">
-          <param name="initial_value">0.0</param>
-        </state_interface>
-      </joint>
-      <joint name="l_hip_pitch">
-        <command_interface name="position"/>
-        <state_interface name="position">
-          <param name="initial_value">0.0</param>
-        </state_interface>
-      </joint>
-      <joint name="l_knee">
-        <command_interface name="position"/>
-        <state_interface name="position">
-          <param name="initial_value">0.0</param>
-        </state_interface>
-      </joint>
-      <joint name="l_ank_pitch">
-        <command_interface name="position"/>
-        <state_interface name="position">
-          <param name="initial_value">0.0</param>
-        </state_interface>
-      </joint>
-      <joint name="l_ank_roll">
-        <command_interface name="position"/>
-        <state_interface name="position">
-          <param name="initial_value">0.0</param>
-        </state_interface>
-      </joint>
+        <!-- Left Leg -->
+        <joint name="l_hip_yaw">
+          <command_interface name="position"/>
+          <state_interface name="position">
+            <param name="initial_value">0.0</param>
+          </state_interface>
+        </joint>
+        <joint name="l_hip_roll">
+          <command_interface name="position"/>
+          <state_interface name="position">
+            <param name="initial_value">0.0</param>
+          </state_interface>
+        </joint>
+        <joint name="l_hip_pitch">
+          <command_interface name="position"/>
+          <state_interface name="position">
+            <param name="initial_value">0.0</param>
+          </state_interface>
+        </joint>
+        <joint name="l_knee">
+          <command_interface name="position"/>
+          <state_interface name="position">
+            <param name="initial_value">0.0</param>
+          </state_interface>
+        </joint>
+        <joint name="l_ank_pitch">
+          <command_interface name="position"/>
+          <state_interface name="position">
+            <param name="initial_value">0.0</param>
+          </state_interface>
+        </joint>
+        <joint name="l_ank_roll">
+          <command_interface name="position"/>
+          <state_interface name="position">
+            <param name="initial_value">0.0</param>
+          </state_interface>
+        </joint>
 
-      <joint name="r_hip_yaw">
-        <command_interface name="position"/>
-        <state_interface name="position">
-          <param name="initial_value">0.0</param>
-        </state_interface>
-      </joint>
-      <joint name="r_hip_roll">
-        <command_interface name="position"/>
-        <state_interface name="position">
-          <param name="initial_value">0.0</param>
-        </state_interface>
-      </joint>
-      <joint name="r_hip_pitch">
-        <command_interface name="position"/>
-        <state_interface name="position">
-          <param name="initial_value">0.0</param>
-        </state_interface>
-      </joint>
-      <joint name="r_knee">
-        <command_interface name="position"/>
-        <state_interface name="position">
-          <param name="initial_value">0.0</param>
-        </state_interface>
-      </joint>
-      <joint name="r_ank_pitch">
-        <command_interface name="position"/>
-        <state_interface name="position">
-          <param name="initial_value">0.0</param>
-        </state_interface>
-      </joint>
-      <joint name="r_ank_roll">
-        <command_interface name="position"/>
-        <state_interface name="position">
-          <param name="initial_value">0.0</param>
-        </state_interface>
-      </joint>
+        <!-- Right Leg -->
+        <joint name="r_hip_yaw">
+          <command_interface name="position"/>
+          <state_interface name="position">
+            <param name="initial_value">0.0</param>
+          </state_interface>
+        </joint>
+        <joint name="r_hip_roll">
+          <command_interface name="position"/>
+          <state_interface name="position">
+            <param name="initial_value">0.0</param>
+          </state_interface>
+        </joint>
+        <joint name="r_hip_pitch">
+          <command_interface name="position"/>
+          <state_interface name="position">
+            <param name="initial_value">0.0</param>
+          </state_interface>
+        </joint>
+        <joint name="r_knee">
+          <command_interface name="position"/>
+          <state_interface name="position">
+            <param name="initial_value">0.0</param>
+          </state_interface>
+        </joint>
+        <joint name="r_ank_pitch">
+          <command_interface name="position"/>
+          <state_interface name="position">
+            <param name="initial_value">0.0</param>
+          </state_interface>
+        </joint>
+        <joint name="r_ank_roll">
+          <command_interface name="position"/>
+          <state_interface name="position">
+            <param name="initial_value">0.0</param>
+          </state_interface>
+        </joint>
 
-      <joint name="head_pan">
-        <command_interface name="position"/>
-        <state_interface name="position">
-          <param name="initial_value">0.0</param>
-        </state_interface>
-      </joint>
-      <joint name="head_tilt">
-        <command_interface name="position"/>
-        <state_interface name="position">
-          <param name="initial_value">0.0</param>
-        </state_interface>
-      </joint>
+      </ros2_control>
 
-    </ros2_control>
+      <!-- ============================================================== -->
+      <!-- REAL HARDWARE: head system (2 DOF PWM servos)                   -->
+      <!-- ============================================================== -->
+      <ros2_control name="head_hardware" type="system">
+        <hardware>
+          <plugin>rhphumanoid_hardware/PWMHeadSystemHardware</plugin>
+          <param name="use_mock">${use_gazebo}</param>
+          <param name="pwm_chip_pan">pwmchip3</param>
+          <param name="pwm_channel_pan">0</param>
+          <param name="pwm_chip_tilt">pwmchip2</param>
+          <param name="pwm_channel_tilt">0</param>
+          <param name="pwm_period_ns">20000000</param>
+          <!-- Pan servo: 0deg=600000ns, 90deg=1600000ns, 180deg=2600000ns -->
+          <param name="pwm_min_duty_ns_pan">600000</param>
+          <param name="pwm_neutral_duty_ns_pan">1600000</param>
+          <param name="pwm_max_duty_ns_pan">2600000</param>
+          <!-- Tilt servo: 90deg=1400000ns; ±1000000ns per 90deg -->
+          <param name="pwm_min_duty_ns_tilt">400000</param>
+          <param name="pwm_neutral_duty_ns_tilt">1400000</param>
+          <param name="pwm_max_duty_ns_tilt">2400000</param>
+        </hardware>
+
+        <joint name="head_pan">
+          <command_interface name="position"/>
+          <state_interface name="position">
+            <param name="initial_value">0.0</param>
+          </state_interface>
+        </joint>
+        <joint name="head_tilt">
+          <command_interface name="position"/>
+          <state_interface name="position">
+            <param name="initial_value">0.0</param>
+          </state_interface>
+        </joint>
+
+      </ros2_control>
+    </xacro:unless>
 
   </xacro:macro>
 

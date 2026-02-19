@@ -3,7 +3,14 @@
          type="rhphumanoid_hardware::RHPHumanoidSystemHardware"
          base_class_type="hardware_interface::SystemInterface">
     <description>
-      ROS2 control for RHPHumanoid.
+      ROS2 control for RHPHumanoid body (22-DOF serial bus).
+    </description>
+  </class>
+  <class name="rhphumanoid_hardware/PWMHeadSystemHardware"
+         type="rhphumanoid_hardware::PWMHeadSystemHardware"
+         base_class_type="hardware_interface::SystemInterface">
+    <description>
+      ROS2 control hardware interface for SG-90 PWM head servos (pan/tilt).
     </description>
   </class>
 </library>

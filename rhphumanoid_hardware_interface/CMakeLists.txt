@@ -32,6 +32,8 @@ add_library(
   src/rhphumanoid.cpp
   src/rhphumanoid_serial.cpp
   src/serial_servo_bus.cpp
+  src/pwm_driver.cpp
+  src/pwm_head_system.cpp
 )
 
 target_include_directories(
