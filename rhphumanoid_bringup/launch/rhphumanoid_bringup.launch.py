@@ -18,6 +18,7 @@ def generate_launch_description():
     # 2. 파일 경로 설정
     xacro_file = PathJoinSubstitution([description_pkg_share, "urdf", "rhphumanoid.urdf.xacro"])
     controller_file = PathJoinSubstitution([bringup_pkg_share, "config", "rhphumanoid_controllers.yaml"])
+    rviz_config_file = PathJoinSubstitution([description_pkg_share, "rviz", "rhphumanoid.rviz"])
 
     # 3. [핵심 수정] Gazebo가 메쉬 파일을 찾을 수 있도록 환경변수 추가
     # Humble/Fortress에서는 GZ_SIM_RESOURCE_PATH를 사용합니다.
@@ -35,6 +36,14 @@ def generate_launch_description():
         description="Start robot in Gazebo simulation if true, otherwise real hardware"
     )
     use_sim = LaunchConfiguration("use_sim")
+
+    # use_rviz_arg 제거됨
+    # use_rviz_arg = DeclareLaunchArgument(
+    #     "use_rviz",
+    #     default_value="false",
+    #     description="Start RViz2 if true"
+    # )
+    # use_rviz = LaunchConfiguration("use_rviz")
 
     # 5. Robot Description 생성 (Xacro 실행)
     robot_description_content = Command(
@@ -80,8 +89,15 @@ def generate_launch_description():
     bridge = Node(
         package='ros_gz_bridge',
         executable='parameter_bridge',
-        # gz.msgs -> ignition.msgs 변경
-        arguments=['/clock@rosgraph_msgs/msg/Clock[ignition.msgs.Clock'],
+        arguments=[
+            '/clock@rosgraph_msgs/msg/Clock[ignition.msgs.Clock',
+            '/camera/image_raw@sensor_msgs/msg/Image[ignition.msgs.Image',
+            '/camera/camera_info@sensor_msgs/msg/CameraInfo[ignition.msgs.CameraInfo'
+        ],
+        remappings=[
+            ('/camera/image_raw', '/usb_cam/image_raw'),
+            ('/camera/camera_info', '/usb_cam/camera_info')
+        ],
         output='screen',
         condition=IfCondition(use_sim)
     )
@@ -152,9 +168,37 @@ def generate_launch_description():
         condition=IfCondition(use_sim)
     )
 
+    # 13. USB Camera Node (Real Robot only)
+    # 실제 장치 심볼릭 링크(/dev/v4l/by-id/...)를 직접 사용하면 usb_cam 노드 내부에서
+    # 상대 경로(../..)를 잘못 해석하는 버그가 있을 수 있으므로 os.path.realpath로 절대 경로 변환
+    usb_cam_device_path = "/dev/v4l/by-id/usb-HD_USB_Camera_HD_USB_Camera-video-index0"
+    if os.path.exists(usb_cam_device_path):
+        usb_cam_device_path = os.path.realpath(usb_cam_device_path)
+    else:
+        # 해당 장치가 없을 경우 기본값으로 fallback (필요시 수정)
+        usb_cam_device_path = "/dev/video0"
+
+    usb_cam_node = Node(
+        package='usb_cam',
+        executable='usb_cam_node_exe',
+        name='usb_cam',
+        output='screen',
+        parameters=[{
+            'video_device': usb_cam_device_path,
+            'framerate': 30.0,
+            'image_width': 1920,
+            'image_height': 1080,
+            'pixel_format': 'mjpeg2rgb',  # YUYV 대신 MJPEG을 사용하고 RGB로 변환하여 송출
+            'camera_name': 'usb_cam',
+            'frame_id': 'camera_frame'
+        }],
+        condition=UnlessCondition(use_sim)
+    )
+
     return LaunchDescription([
         set_gz_resource_path,
         use_sim_arg,
+        usb_cam_node,
         robot_state_publisher_node,
         include_gazebo,
         spawn_entity,
