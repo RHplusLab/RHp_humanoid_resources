@@ -109,7 +109,10 @@ def generate_launch_description():
     control_node = Node(
         package="controller_manager",
         executable="ros2_control_node",
-        parameters=[robot_description, controller_file],
+        parameters=[controller_file],  # robot_description 파라미터는 제거됨
+        remappings=[
+            ('~/robot_description', '/robot_description')  # 이 부분을 추가!
+        ],
         output="both",
         condition=UnlessCondition(use_sim)
     )

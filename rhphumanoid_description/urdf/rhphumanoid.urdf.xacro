@@ -17,6 +17,14 @@
   <!-- <xacro:include filename="$(find rhphumanoid_description)/urdf/rhphumanoid.ros2.gazebo.xacro" /> -->
   <xacro:include filename="$(find rhphumanoid_description)/ros2_control/rhphumanoid.ros2_control.xacro" />
 
+  <link name="base_link"/>
+
+  <joint name="base_to_body_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="body_link"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
+
   <!-- body link -->
   <link name="body_link">
     <visual>

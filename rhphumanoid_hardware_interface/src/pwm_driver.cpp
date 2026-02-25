@@ -50,21 +50,21 @@ bool PWMDriver::init(const std::string & chip, int channel, bool use_mock)
       "[MOCK] Would set period=%d ns, duty=%d ns (neutral), enable=1",
       period_ns_, neutral_duty_ns_);
   } else {
-    // Export the PWM channel
-    if (!write_sysfs(export_path, std::to_string(channel))) {
-      // If export fails the channel may already be exported -- check if the
-      // directory exists before treating it as a hard error.
-      std::ifstream test(sysfs_base_path_ + "period");
-      if (!test.good()) {
+    std::ifstream test(sysfs_base_path_ + "period");
+    if (test.good()) {
+      // 이미 디렉토리(채널)가 존재함
+      RCLCPP_INFO(
+        rclcpp::get_logger(kLoggerName),
+        "PWM channel %d on %s already exported, continuing", channel, chip.c_str());
+    } else {
+      // 존재하지 않을 때만 export 시도
+      if (!write_sysfs(export_path, std::to_string(channel))) {
         RCLCPP_ERROR(
           rclcpp::get_logger(kLoggerName),
           "Failed to export PWM channel %d on %s and sysfs path does not exist",
           channel, chip.c_str());
         return false;
       }
-      RCLCPP_WARN(
-        rclcpp::get_logger(kLoggerName),
-        "PWM channel %d on %s already exported, continuing", channel, chip.c_str());
     }
 
     // Set period
