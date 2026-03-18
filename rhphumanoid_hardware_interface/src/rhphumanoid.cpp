@@ -295,7 +295,7 @@ void rhphumanoid::Process()
   int ck_for_idle_cnt = 0;
 
   bool first_set = true;
-  bool initial_read_done = false;
+  int initial_read_counter = 100; // 20ms * 100 = 2000ms 동안은 실제 위치 추적
 
   int read_pos_delay_cnt = 0;
   std::map<std::string, JointState> local_pos_map;
@@ -362,12 +362,14 @@ void rhphumanoid::Process()
       }
     }
 
-    // 3. Hardware Initial Read Check
+    // 3. Hardware Initial Read Check & Bringup Tracking
     if (!has_new_cmd && --read_pos_delay_cnt <= 0) {
       read_pos_delay_cnt = READ_POS_SKIP_COUNT;
 
-      if (!initial_read_done) {
-        RCLCPP_INFO(rclcpp::get_logger("RHPHumanoidSystemHardware"), "Performing INITIAL hardware check...");
+      if (initial_read_counter > 0) {
+        if (initial_read_counter == 100) {
+          RCLCPP_INFO(rclcpp::get_logger("RHPHumanoidSystemHardware"), "Performing INITIAL hardware check & tracking movement for 2s...");
+        }
 
         {
           std::lock_guard<std::mutex> guard(mutex_);
@@ -380,18 +382,21 @@ void rhphumanoid::Process()
           std::lock_guard<std::mutex> guard(mutex_);
 
           if (!new_cmd_)
-					{
-						last_pos_get_map_ = local_pos_map;
-					}
-					else
-					{
-						RCLCPP_WARN(rclcpp::get_logger("RHPHumanoidSystemHardware"),
-												"Race condition detected! New command received during read. Discarding read result.");
-					}
+          {
+            last_pos_get_map_ = local_pos_map;
+          }
+          else
+          {
+            RCLCPP_WARN(rclcpp::get_logger("RHPHumanoidSystemHardware"),
+                        "Race condition detected! New command received during read. Discarding read result.");
+          }
         }
 
-        initial_read_done = true;
-        RCLCPP_INFO(rclcpp::get_logger("RHPHumanoidSystemHardware"), "Initial check DONE. Switching to WRITE-ONLY mode.");
+        initial_read_counter--;
+
+        if (initial_read_counter == 0) {
+          RCLCPP_INFO(rclcpp::get_logger("RHPHumanoidSystemHardware"), "Initial 2s tracking DONE. Switching to WRITE-ONLY mode.");
+        }
       }
     }
 
