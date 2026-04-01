@@ -295,7 +295,7 @@ void rhphumanoid::Process()
   int ck_for_idle_cnt = 0;
 
   bool first_set = true;
-  int initial_read_counter = 100; // 20ms * 100 = 2000ms 동안은 실제 위치 추적
+  int initial_read_counter = 20; // 수정됨: 20회 * 5루프 * 20ms = 정확히 2000ms
 
   int read_pos_delay_cnt = 0;
   std::map<std::string, JointState> local_pos_map;
@@ -356,7 +356,8 @@ void rhphumanoid::Process()
       ck_for_manual_mode_cnt = 0;
 
     } else {
-      if (!idle && ++ck_for_idle_cnt > IDLE_ENTRY_CNT) {
+      // 수정됨: initial_read_counter가 0 이하일 때만 Idle 모드로 진입 허용
+      if (!idle && initial_read_counter <= 0 && ++ck_for_idle_cnt > IDLE_ENTRY_CNT) {
         idle = true;
         RCLCPP_INFO(rclcpp::get_logger("RHPHumanoidSystemHardware"), "Entering Idle Mode");
       }
@@ -367,7 +368,7 @@ void rhphumanoid::Process()
       read_pos_delay_cnt = READ_POS_SKIP_COUNT;
 
       if (initial_read_counter > 0) {
-        if (initial_read_counter == 100) {
+        if (initial_read_counter == 20) { // 수정됨
           RCLCPP_INFO(rclcpp::get_logger("RHPHumanoidSystemHardware"), "Performing INITIAL hardware check & tracking movement for 2s...");
         }
 
