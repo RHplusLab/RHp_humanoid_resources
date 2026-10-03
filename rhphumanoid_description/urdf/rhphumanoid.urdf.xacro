@@ -31,9 +31,9 @@
       <xacro:insert_mesh_body_link />
     </visual>
     <collision>
-      <origin xyz="0.0000 0.0000 0.0436" rpy="0 0 0"/>
+      <origin xyz="0.0000 0.0000 0.0407" rpy="0 0 0"/>
       <geometry>
-        <box size="0.1189 0.1321 0.1785"/>
+        <box size="0.1190 0.1321 0.1745"/>
       </geometry>
     </collision>
     <inertial>
