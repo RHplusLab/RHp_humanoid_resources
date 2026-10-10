@@ -15,7 +15,9 @@
 #ifndef RHPHUMANOID_HARDWARE_INTERFACE__PWM_DRIVER_HPP_
 #define RHPHUMANOID_HARDWARE_INTERFACE__PWM_DRIVER_HPP_
 
+#include <chrono>
 #include <string>
+#include <vector>
 
 namespace rhphumanoid_hardware
 {
@@ -60,6 +62,10 @@ public:
   }
 
 private:
+  /// Block until every path is writable by this process, or timeout expires.
+  static bool wait_until_writable(
+    const std::vector<std::string> & paths, std::chrono::milliseconds timeout);
+
   /// Write a string value to a sysfs file.  Returns true on success.
   bool write_sysfs(const std::string & path, const std::string & value);
 

@@ -14,11 +14,15 @@
 
 #include "rhphumanoid_hardware_interface/pwm_driver.hpp"
 
+#include <unistd.h>
+
 #include <algorithm>
+#include <chrono>
 #include <cmath>
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <thread>
 
 #include "rclcpp/rclcpp.hpp"
 
@@ -65,6 +69,19 @@ bool PWMDriver::init(const std::string & chip, int channel, bool use_mock)
           channel, chip.c_str());
         return false;
       }
+    }
+
+    // export 직후에는 udev가 pwm0/* 권한(root:gpio)을 바꾸기 전이라 쓰기가 실패할 수 있으므로
+    // 모든 속성 파일이 쓰기 가능해질 때까지 대기한다.
+    if (!wait_until_writable(
+        {sysfs_base_path_ + "period", sysfs_base_path_ + "duty_cycle",
+          sysfs_base_path_ + "enable"}, std::chrono::milliseconds(3000)))
+    {
+      RCLCPP_ERROR(
+        rclcpp::get_logger(kLoggerName),
+        "PWM sysfs files under %s did not become writable (check udev/gpio group)",
+        sysfs_base_path_.c_str());
+      return false;
     }
 
     // Set period
@@ -163,6 +180,28 @@ void PWMDriver::shutdown()
 // ---------------------------------------------------------------------------
 // Private helpers
 // ---------------------------------------------------------------------------
+
+bool PWMDriver::wait_until_writable(
+  const std::vector<std::string> & paths, std::chrono::milliseconds timeout)
+{
+  const auto deadline = std::chrono::steady_clock::now() + timeout;
+  while (true) {
+    bool all_ok = true;
+    for (const auto & p : paths) {
+      if (access(p.c_str(), W_OK) != 0) {
+        all_ok = false;
+        break;
+      }
+    }
+    if (all_ok) {
+      return true;
+    }
+    if (std::chrono::steady_clock::now() >= deadline) {
+      return false;
+    }
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+  }
+}
 
 bool PWMDriver::write_sysfs(const std::string & path, const std::string & value)
 {
