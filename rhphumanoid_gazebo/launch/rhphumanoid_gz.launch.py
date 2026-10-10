@@ -16,12 +16,16 @@ def generate_launch_description():
         pkg_rhphumanoid_gazebo, "config", "gui.config"
     ])
 
+    # 월드: 기본 empty.sdf에는 Sensors/Imu 시스템이 없어 카메라/IMU가 생성되지 않으므로 커스텀 월드 사용
+    world_path = PathJoinSubstitution([
+        pkg_rhphumanoid_gazebo, "worlds", "rhphumanoid_empty.sdf"
+    ])
+
     # 3. Gazebo 실행 인수 설정
     # -r: 시뮬레이션 자동 실행
-    # empty.sdf: 빈 월드 실행 (나중에 다른 월드로 교체 가능)
     # --gui-config: 우리가 만든 화면 설정 파일 불러오기
     gz_args = [
-        "-r empty.sdf ",
+        "-r ", world_path, " ",
         "--gui-config ", gui_config_path
     ]
 
