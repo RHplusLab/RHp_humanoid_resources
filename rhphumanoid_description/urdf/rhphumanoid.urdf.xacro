@@ -2,6 +2,7 @@
 <robot xmlns:xacro="http://ros.org/wiki/xacro" name="rhphumanoid">
 
   <xacro:arg name="use_gazebo" default="false" />
+  <xacro:arg name="head_only" default="false" />
 
   <xacro:include filename="$(find rhphumanoid_description)/urdf/rhphumanoid.visuals.xacro" />
   <xacro:include filename="$(find rhphumanoid_description)/urdf/rhphumanoid.inertia.xacro" />
@@ -48,7 +49,7 @@
   <!-- leg link -->
   <xacro:rhphumanoid_r_leg parent="body_link" />
   <xacro:rhphumanoid_l_leg parent="body_link" />
-  <xacro:rhphumanoid_ros2_control name="RHPHumanoid" use_gazebo="$(arg use_gazebo)" />
+  <xacro:rhphumanoid_ros2_control name="RHPHumanoid" use_gazebo="$(arg use_gazebo)" head_only="$(arg head_only)" />
 
 
   <!-- head links -->

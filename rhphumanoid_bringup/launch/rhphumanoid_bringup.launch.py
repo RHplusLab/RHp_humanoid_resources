@@ -3,7 +3,7 @@ from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, RegisterEventHandler, IncludeLaunchDescription, TimerAction, AppendEnvironmentVariable
 from launch.conditions import IfCondition, UnlessCondition
 from launch.event_handlers import OnProcessExit, OnProcessStart
-from launch.substitutions import Command, FindExecutable, LaunchConfiguration, PathJoinSubstitution
+from launch.substitutions import Command, FindExecutable, LaunchConfiguration, PathJoinSubstitution, PythonExpression
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch_ros.actions import Node
 from launch_ros.parameter_descriptions import ParameterValue
@@ -38,6 +38,14 @@ def generate_launch_description():
     )
     use_sim = LaunchConfiguration("use_sim")
 
+    # 22축 body 하드웨어 없이 목(head) 2축만 테스트할 때 true
+    head_only_arg = DeclareLaunchArgument(
+        "head_only",
+        default_value="false",
+        description="Load only head_hardware (skip 22-DOF body, arm/leg controllers)"
+    )
+    head_only = LaunchConfiguration("head_only")
+
     # use_rviz_arg 제거됨
     # use_rviz_arg = DeclareLaunchArgument(
     #     "use_rviz",
@@ -51,7 +59,8 @@ def generate_launch_description():
         [
             FindExecutable(name="xacro"), " ",
             xacro_file, " ",
-            "use_gazebo:=", use_sim
+            "use_gazebo:=", use_sim, " ",
+            "head_only:=", head_only
         ]
     )
     robot_description = {
@@ -159,7 +168,19 @@ def generate_launch_description():
                 head_controller_spawner,
             ],
         ),
-        condition=UnlessCondition(use_sim)
+        condition=UnlessCondition(PythonExpression(["'", use_sim, "' == 'true' or '", head_only, "' == 'true'"]))
+    )
+
+    # [실제 로봇 - head_only] 목 컨트롤러만 spawn
+    delay_spawners_head_only = RegisterEventHandler(
+        event_handler=OnProcessStart(
+            target_action=control_node,
+            on_start=[
+                joint_state_broadcaster_spawner,
+                head_controller_spawner,
+            ],
+        ),
+        condition=IfCondition(PythonExpression(["'", use_sim, "' != 'true' and '", head_only, "' == 'true'"]))
     )
 
     # [시뮬레이션]
@@ -204,6 +225,7 @@ def generate_launch_description():
     return LaunchDescription([
         set_gz_resource_path,
         use_sim_arg,
+        head_only_arg,
         usb_cam_node,
         robot_state_publisher_node,
         include_gazebo,
@@ -211,5 +233,6 @@ def generate_launch_description():
         bridge,
         control_node,
         delay_spawners_real,
+        delay_spawners_head_only,
         delay_spawners_sim,
     ])

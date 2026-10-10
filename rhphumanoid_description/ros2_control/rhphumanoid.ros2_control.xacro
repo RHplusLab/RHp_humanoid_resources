@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
 
-  <xacro:macro name="rhphumanoid_ros2_control" params="name use_gazebo:=^|false">
+  <xacro:macro name="rhphumanoid_ros2_control" params="name use_gazebo:=^|false head_only:=false">
 
     <!-- ============================================================== -->
     <!-- GAZEBO SIMULATION: single system with all 24 joints            -->
@@ -173,6 +173,7 @@
     <!-- REAL HARDWARE: body system (22 DOF serial bus)                  -->
     <!-- ============================================================== -->
     <xacro:unless value="${use_gazebo}">
+      <xacro:unless value="${head_only}">
       <ros2_control name="body_hardware" type="system">
         <hardware>
           <plugin>rhphumanoid_hardware/RHPHumanoidSystemHardware</plugin>
@@ -322,6 +323,7 @@
         </joint>
 
       </ros2_control>
+      </xacro:unless>
 
       <!-- ============================================================== -->
       <!-- REAL HARDWARE: head system (2 DOF PWM servos)                   -->
