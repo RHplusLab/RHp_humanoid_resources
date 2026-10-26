@@ -213,12 +213,21 @@ def generate_launch_description():
         parameters=[{
             'video_device': usb_cam_device_path,
             'framerate': 30.0,
-            'image_width': 1920,
-            'image_height': 1080,
+            'image_width': 640,
+            'image_height': 480,
             'pixel_format': 'mjpeg2rgb',  # YUYV 대신 MJPEG을 사용하고 RGB로 변환하여 송출
             'camera_name': 'usb_cam',
             'frame_id': 'camera_frame'
         }],
+        condition=UnlessCondition(use_sim)
+    )
+
+    # 카메라가 거꾸로 달려 있어 180도 회전한 압축 영상을 /image_flipped/compressed 로 발행
+    image_flipper_node = Node(
+        package='rhphumanoid_vision',
+        executable='image_flipper',
+        name='image_flipper',
+        output='screen',
         condition=UnlessCondition(use_sim)
     )
 
@@ -227,6 +236,7 @@ def generate_launch_description():
         use_sim_arg,
         head_only_arg,
         usb_cam_node,
+        image_flipper_node,
         robot_state_publisher_node,
         include_gazebo,
         spawn_entity,
