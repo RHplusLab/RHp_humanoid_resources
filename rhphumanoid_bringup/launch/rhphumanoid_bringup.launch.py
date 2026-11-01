@@ -104,7 +104,8 @@ def generate_launch_description():
         arguments=[
             '/clock@rosgraph_msgs/msg/Clock[ignition.msgs.Clock',
             '/camera/image_raw@sensor_msgs/msg/Image[ignition.msgs.Image',
-            '/camera/camera_info@sensor_msgs/msg/CameraInfo[ignition.msgs.CameraInfo'
+            '/camera/camera_info@sensor_msgs/msg/CameraInfo[ignition.msgs.CameraInfo',
+            '/imu@sensor_msgs/msg/Imu[ignition.msgs.IMU'
         ],
         remappings=[
             ('/camera/image_raw', '/usb_cam/image_raw'),
