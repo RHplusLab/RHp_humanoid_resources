@@ -46,6 +46,30 @@ def generate_launch_description():
     )
     head_only = LaunchConfiguration("head_only")
 
+    # 서보 버스 (실제 로봇). 쉼표로 구분한 장치 목록, auto = 모든 /dev/ttyUSB* (응답하는 서보 ID로 버스 자동 판별)
+    serial_ports_arg = DeclareLaunchArgument(
+        "serial_ports",
+        default_value="auto",
+        description="Servo bus serial devices, comma separated, or 'auto' (every /dev/ttyUSB*)"
+    )
+    serial_ports = LaunchConfiguration("serial_ports")
+
+    # initial: 처음 2초만 위치를 읽고 이후 쓰기 전용 (상태 = 마지막 명령, 기존 동작)
+    # continuous: 위치를 계속 읽음 (상태 = 측정 위치, 강화학습 정책용)
+    servo_read_mode_arg = DeclareLaunchArgument(
+        "servo_read_mode",
+        default_value="initial",
+        description="'initial' (read 2 s, then write-only) or 'continuous' (keep reading measured positions)"
+    )
+    servo_read_mode = LaunchConfiguration("servo_read_mode")
+
+    servo_reads_per_cycle_arg = DeclareLaunchArgument(
+        "servo_reads_per_cycle",
+        default_value="0",
+        description="continuous mode: servos read per bus per cycle, round robin (0 = all)"
+    )
+    servo_reads_per_cycle = LaunchConfiguration("servo_reads_per_cycle")
+
     # use_rviz_arg 제거됨
     # use_rviz_arg = DeclareLaunchArgument(
     #     "use_rviz",
@@ -60,7 +84,10 @@ def generate_launch_description():
             FindExecutable(name="xacro"), " ",
             xacro_file, " ",
             "use_gazebo:=", use_sim, " ",
-            "head_only:=", head_only
+            "head_only:=", head_only, " ",
+            "serial_ports:=", serial_ports, " ",
+            "servo_read_mode:=", servo_read_mode, " ",
+            "servo_reads_per_cycle:=", servo_reads_per_cycle
         ]
     )
     robot_description = {
@@ -236,6 +263,9 @@ def generate_launch_description():
         set_gz_resource_path,
         use_sim_arg,
         head_only_arg,
+        serial_ports_arg,
+        servo_read_mode_arg,
+        servo_reads_per_cycle_arg,
         usb_cam_node,
         image_flipper_node,
         robot_state_publisher_node,

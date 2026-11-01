@@ -10,6 +10,9 @@
 #include <string.h>
 #include <termios.h>
 #include <unistd.h>
+#include <poll.h>
+#include <chrono>
+#include <vector>
 
 #include "rhphumanoid_hardware_interface/serial_servo_bus.hpp"
 
@@ -241,4 +244,104 @@ bool LobotSerialServoReadPosition(int fd, uint8_t id, uint16_t &position) {
 
 bool LobotSerialServoReadVin(int fd, uint8_t id, uint16_t &vin) {
   return ReadCommand2ByteReturn(fd, id, LOBOT_SERVO_VIN_READ, vin);
+}
+
+bool LobotSerialServoMoveMany(int fd, const std::vector<std::pair<uint8_t, int16_t>> &items, uint16_t time) {
+  if (items.empty()) {
+    return true;
+  }
+  const int msgLen = 10;
+  std::vector<uint8_t> out;
+  out.reserve(items.size() * msgLen);
+  uint8_t buf[msgLen];
+  for (const auto &item : items) {
+    int16_t position = item.second;
+    if (position < 0) {
+      position = 0;
+    }
+    if (position > 1000) {
+      position = 1000;
+    }
+    buf[0] = buf[1] = LOBOT_SERVO_FRAME_HEADER;
+    buf[2] = item.first;
+    buf[3] = msgLen - 3;
+    buf[4] = LOBOT_SERVO_MOVE_TIME_WRITE;
+    buf[5] = GET_LOW_uint8_t(position);
+    buf[6] = GET_HIGH_uint8_t(position);
+    buf[7] = GET_LOW_uint8_t(time);
+    buf[8] = GET_HIGH_uint8_t(time);
+    buf[9] = LobotCheckSum(buf);
+    out.insert(out.end(), buf, buf + msgLen);
+  }
+  return writeMsg(fd, out.data(), static_cast<int>(out.size()));
+}
+
+bool LobotSerialServoReadPositionTimeout(int fd, uint8_t id, int16_t &position, int timeout_ms) {
+  const int reqLen = 6;
+  uint8_t req[reqLen];
+  req[0] = req[1] = LOBOT_SERVO_FRAME_HEADER;
+  req[2] = id;
+  req[3] = reqLen - 3;
+  req[4] = LOBOT_SERVO_POS_READ;
+  req[5] = LobotCheckSum(req);
+
+  tcflush(fd, TCIFLUSH);  // drop stale bytes (late replies of an earlier timed-out read)
+  if (!writeMsg(fd, req, reqLen)) {
+    return false;
+  }
+
+  const auto deadline = std::chrono::steady_clock::now() + std::chrono::milliseconds(timeout_ms);
+  std::vector<uint8_t> rx;
+  uint8_t chunk[64];
+  while (true) {
+    const auto left = std::chrono::duration_cast<std::chrono::milliseconds>(
+      deadline - std::chrono::steady_clock::now()).count();
+    if (left <= 0) {
+      return false;
+    }
+    struct pollfd pfd = {fd, POLLIN, 0};
+    int pr = poll(&pfd, 1, static_cast<int>(left));
+    if (pr < 0) {
+      if (errno == EINTR) {
+        continue;
+      }
+      return false;
+    }
+    if (pr == 0) {
+      return false;
+    }
+    ssize_t n = read(fd, chunk, sizeof(chunk));
+    if (n < 0) {
+      if (errno == EINTR || errno == EAGAIN) {
+        continue;
+      }
+      return false;
+    }
+    rx.insert(rx.end(), chunk, chunk + n);
+
+    // parse frames: 0x55 0x55 ID LEN CMD PARAMS... CHK (frame length = LEN + 3)
+    size_t k = 0;
+    while (k + 4 <= rx.size()) {
+      if (rx[k] != LOBOT_SERVO_FRAME_HEADER || rx[k + 1] != LOBOT_SERVO_FRAME_HEADER) {
+        k++;
+        continue;
+      }
+      const uint8_t len = rx[k + 3];
+      if (len < 3 || len > 10) {
+        k++;
+        continue;
+      }
+      const size_t end = k + 3 + len;
+      if (end > rx.size()) {
+        break;  // incomplete frame: wait for more bytes
+      }
+      uint8_t *f = &rx[k];
+      if (LobotCheckSum(f) == f[len + 2] && f[2] == id && f[4] == LOBOT_SERVO_POS_READ && len == 5) {
+        position = static_cast<int16_t>(uint8_t_TO_HW(f[6], f[5]));
+        return true;
+      }
+      k = end;  // another frame (e.g. our own request echoed): skip it
+    }
+    rx.erase(rx.begin(), rx.begin() + static_cast<long>(k));
+  }
 }

@@ -18,6 +18,8 @@
 #include <cmath>
 #include <limits>
 #include <memory>
+#include <sstream>
+#include <string>
 #include <vector>
 
 #include "hardware_interface/types/hardware_interface_type_values.hpp"
@@ -56,6 +58,42 @@ hardware_interface::CallbackReturn RHPHumanoidSystemHardware::on_init(
     hw_slowdown_ = stod(info_.hardware_parameters.at("example_param_hw_slowdown"));
   } else {
     hw_slowdown_ = 10.0;
+  }
+
+  // 1-1. 서보 버스 설정 (여러 버스 지원, 2026-11)
+  //   serial_ports: 쉼표로 구분한 장치 목록, "auto" = 모든 /dev/ttyUSB*. 없으면 /dev/ttyRHP (이전 동작)
+  //   servo_read_mode: "initial" (처음 2초만 읽고 이후 쓰기 전용, 상태 = 마지막 명령, 이전 동작) |
+  //                    "continuous" (계속 읽음, 상태 = 측정 위치)
+  //   servo_reads_per_cycle: continuous에서 버스당 주기마다 읽을 서보 수 (0 = 전부)
+  //   servo_update_period_ms, servo_read_timeout_ms
+  auto param = [this](const std::string & key, const std::string & def) {
+    auto it = info_.hardware_parameters.find(key);
+    return (it == info_.hardware_parameters.end() || it->second.empty()) ? def : it->second;
+  };
+  {
+    bus_cfg_.ports.clear();
+    std::stringstream ss(param("serial_ports", "/dev/ttyRHP"));
+    std::string item;
+    while (std::getline(ss, item, ',')) {
+      item.erase(0, item.find_first_not_of(" \t"));
+      item.erase(item.find_last_not_of(" \t") + 1);
+      if (!item.empty()) bus_cfg_.ports.push_back(item);
+    }
+    const std::string mode = param("servo_read_mode", "initial");
+    if (mode != "initial" && mode != "continuous") {
+      RCLCPP_FATAL(rclcpp::get_logger("RHPHumanoidSystemHardware"),
+        "servo_read_mode '%s': expected 'initial' or 'continuous'", mode.c_str());
+      return CallbackReturn::ERROR;
+    }
+    bus_cfg_.continuous_read = (mode == "continuous");
+    bus_cfg_.reads_per_cycle = std::stoi(param("servo_reads_per_cycle", "0"));
+    bus_cfg_.update_period_ms = std::stoi(param("servo_update_period_ms", "20"));
+    bus_cfg_.read_timeout_ms = std::stoi(param("servo_read_timeout_ms", "50"));
+    std::string ports;
+    for (const auto & p : bus_cfg_.ports) ports += p + " ";
+    RCLCPP_INFO(rclcpp::get_logger("RHPHumanoidSystemHardware"),
+      "Servo buses: %s| read mode %s, reads/cycle %d, period %d ms, read timeout %d ms", ports.c_str(), mode.c_str(),
+      bus_cfg_.reads_per_cycle, bus_cfg_.update_period_ms, bus_cfg_.read_timeout_ms);
   }
 
   // 2. Initial Value 설정
@@ -147,7 +185,7 @@ hardware_interface::CallbackReturn RHPHumanoidSystemHardware::on_activate(const 
   RCLCPP_INFO(rclcpp::get_logger("RHPHumanoidSystemHardware"), "Starting ...please wait...");
 
 #if !defined(FAKE_IT)
-  if (!rhphumanoid.init()) {
+  if (!rhphumanoid.init(bus_cfg_)) {
 	  return hardware_interface::CallbackReturn::ERROR;
   }
 #endif

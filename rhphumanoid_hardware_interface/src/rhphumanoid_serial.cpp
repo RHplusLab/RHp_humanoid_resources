@@ -131,6 +131,43 @@ namespace rhphumanoid
 		return true;
 	}
 
+	bool rhphumanoid_serial::readPosition(int id, int &pos, int timeout_ms)
+	{
+		int16_t p = 0;
+		if (!LobotSerialServoReadPositionTimeout(fd_, static_cast<uint8_t>(id), p, timeout_ms)) {
+			return false;
+		}
+		pos = p;
+		return true;
+	}
+
+	bool rhphumanoid_serial::movePositions(const std::vector<std::pair<int, int>> &id_pos, uint16_t time)
+	{
+		std::vector<std::pair<uint8_t, int16_t>> items;
+		items.reserve(id_pos.size());
+		for (const auto &ip : id_pos) {
+			items.emplace_back(static_cast<uint8_t>(ip.first), static_cast<int16_t>(ip.second));
+		}
+		if (!LobotSerialServoMoveMany(fd_, items, time)) {
+			RCLCPP_ERROR(rclcpp::get_logger("RHPHumanoidSystemHardware"), "Failed to write %zu servo positions", items.size());
+			return false;
+		}
+		return true;
+	}
+
+	bool rhphumanoid_serial::setManualMode(const std::vector<int> &ids, bool enable)
+	{
+		bool bOk = true;
+		for (int id : ids) {
+			bool ok = enable ? LobotSerialServoUnload(fd_, id) : LobotSerialServoLoad(fd_, id);
+			if (!ok) {
+				RCLCPP_ERROR(rclcpp::get_logger("RHPHumanoidSystemHardware"), "Failed to set enable mode on servo %d", id);
+				bOk = false;
+			}
+		}
+		return bOk;
+	}
+
 	bool rhphumanoid_serial::setManualModeAll(bool enable, int count)
 	{
 		bool bOk = false;

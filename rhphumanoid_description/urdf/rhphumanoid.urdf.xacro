@@ -3,6 +3,9 @@
 
   <xacro:arg name="use_gazebo" default="false" />
   <xacro:arg name="head_only" default="false" />
+  <xacro:arg name="serial_ports" default="auto" />
+  <xacro:arg name="servo_read_mode" default="initial" />
+  <xacro:arg name="servo_reads_per_cycle" default="0" />
 
   <xacro:include filename="$(find rhphumanoid_description)/urdf/rhphumanoid.visuals.xacro" />
   <xacro:include filename="$(find rhphumanoid_description)/urdf/rhphumanoid.inertia.xacro" />
@@ -49,7 +52,8 @@
   <!-- leg link -->
   <xacro:rhphumanoid_r_leg parent="body_link" />
   <xacro:rhphumanoid_l_leg parent="body_link" />
-  <xacro:rhphumanoid_ros2_control name="RHPHumanoid" use_gazebo="$(arg use_gazebo)" head_only="$(arg head_only)" />
+  <xacro:rhphumanoid_ros2_control name="RHPHumanoid" use_gazebo="$(arg use_gazebo)" head_only="$(arg head_only)"
+    serial_ports="$(arg serial_ports)" servo_read_mode="$(arg servo_read_mode)" servo_reads_per_cycle="$(arg servo_reads_per_cycle)" />
 
 
   <!-- head links -->

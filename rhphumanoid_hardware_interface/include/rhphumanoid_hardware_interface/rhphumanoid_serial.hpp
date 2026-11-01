@@ -22,6 +22,11 @@ namespace rhphumanoid
 			bool setJointPosition(int id, uint16_t pos, uint16_t time) override;
 			bool setManualModeAll(bool enable, int count) override;
 
+			// multi-bus driver
+			bool readPosition(int id, int &pos, int timeout_ms);
+			bool movePositions(const std::vector<std::pair<int, int>> &id_pos, uint16_t time);
+			bool setManualMode(const std::vector<int> &ids, bool enable);
+
 		private:
 			int fd_;
 	};

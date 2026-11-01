@@ -72,6 +72,7 @@ private:
   std::vector<double> hw_states_;
   std::vector<std::string> hw_joint_name_;
 
+  rhphumanoid::BusConfig bus_cfg_;
   rhphumanoid::rhphumanoid rhphumanoid;
 };
 

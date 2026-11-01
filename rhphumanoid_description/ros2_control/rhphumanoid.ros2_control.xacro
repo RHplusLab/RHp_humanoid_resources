@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
 
-  <xacro:macro name="rhphumanoid_ros2_control" params="name use_gazebo:=^|false head_only:=false">
+  <xacro:macro name="rhphumanoid_ros2_control" params="name use_gazebo:=^|false head_only:=false serial_ports:=auto servo_read_mode:=initial servo_reads_per_cycle:=0">
 
     <!-- ============================================================== -->
     <!-- GAZEBO SIMULATION: single system with all 24 joints            -->
@@ -180,6 +180,12 @@
           <param name="example_param_hw_start_duration_sec">0.0</param>
           <param name="example_param_hw_stop_duration_sec">2.0</param>
           <param name="example_param_hw_slowdown">10.0</param>
+          <!-- 서보 버스: 쉼표로 구분한 장치 목록, auto = 모든 /dev/ttyUSB* (서보 ID 응답으로 버스 자동 판별) -->
+          <param name="serial_ports">${serial_ports}</param>
+          <!-- initial: 처음 2초만 읽고 쓰기 전용(상태 = 마지막 명령) / continuous: 계속 읽음(상태 = 측정 위치) -->
+          <param name="servo_read_mode">${servo_read_mode}</param>
+          <!-- continuous에서 버스당 주기마다 읽을 서보 수, 0 = 전부 -->
+          <param name="servo_reads_per_cycle">${servo_reads_per_cycle}</param>
         </hardware>
 
         <!-- Left Arm -->
