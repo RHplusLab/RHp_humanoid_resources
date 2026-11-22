@@ -70,6 +70,32 @@ def generate_launch_description():
     )
     servo_reads_per_cycle = LaunchConfiguration("servo_reads_per_cycle")
 
+    # Gazebo 에서 몸통을 공중에 고정 (모션 편집/확인용)
+    fixed_arg = DeclareLaunchArgument(
+        "fixed",
+        default_value="false",
+        description="(use_sim only) Fix the body in the air so the robot cannot fall"
+    )
+    fixed = LaunchConfiguration("fixed")
+
+    # Gazebo 월드 (rhphumanoid_gazebo/worlds 안의 파일 이름)
+    world_arg = DeclareLaunchArgument(
+        "world",
+        default_value="rhphumanoid_empty.sdf",
+        description="(use_sim only) World file, e.g. rhphumanoid_basketball.sdf"
+    )
+    # 로봇 생성 높이. 0.27 이면 발이 바닥에 닿은 채로 생성 (fixed:=true 면 그 높이에 고정)
+    spawn_z_arg = DeclareLaunchArgument(
+        "spawn_z",
+        default_value="1.0",
+        description="(use_sim only) Spawn height of the robot [m]"
+    )
+    # 로봇 생성 x 위치 / 앞으로 숙인 각도 (fixed:=true 와 함께 쓰면 그 자세로 고정 - 자세 확인용)
+    spawn_x_arg = DeclareLaunchArgument(
+        "spawn_x", default_value="0.0", description="(use_sim only) Spawn x of the robot [m]")
+    spawn_pitch_arg = DeclareLaunchArgument(
+        "spawn_pitch", default_value="0.0", description="(use_sim only) Spawn pitch of the robot [rad], + = lean forward")
+
     # use_rviz_arg 제거됨
     # use_rviz_arg = DeclareLaunchArgument(
     #     "use_rviz",
@@ -87,7 +113,8 @@ def generate_launch_description():
             "head_only:=", head_only, " ",
             "serial_ports:=", serial_ports, " ",
             "servo_read_mode:=", servo_read_mode, " ",
-            "servo_reads_per_cycle:=", servo_reads_per_cycle
+            "servo_reads_per_cycle:=", servo_reads_per_cycle, " ",
+            "fixed:=", fixed
         ]
     )
     robot_description = {
@@ -108,6 +135,7 @@ def generate_launch_description():
         PythonLaunchDescriptionSource([
             PathJoinSubstitution([gazebo_pkg_share, "launch", "rhphumanoid_gz.launch.py"])
         ]),
+        launch_arguments={"world": LaunchConfiguration("world")}.items(),
         condition=IfCondition(use_sim)
     )
 
@@ -118,7 +146,9 @@ def generate_launch_description():
         arguments=[
             "-topic", "robot_description",
             "-name", "rhphumanoid",
-            "-z", "1.0",  # 로봇 시작 높이
+            "-x", LaunchConfiguration("spawn_x"),
+            "-z", LaunchConfiguration("spawn_z"),  # 로봇 시작 높이
+            "-P", LaunchConfiguration("spawn_pitch"),
         ],
         output="screen",
         condition=IfCondition(use_sim)
@@ -266,6 +296,11 @@ def generate_launch_description():
         serial_ports_arg,
         servo_read_mode_arg,
         servo_reads_per_cycle_arg,
+        fixed_arg,
+        world_arg,
+        spawn_z_arg,
+        spawn_x_arg,
+        spawn_pitch_arg,
         usb_cam_node,
         image_flipper_node,
         robot_state_publisher_node,

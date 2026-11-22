@@ -1,9 +1,9 @@
 import os
 from launch import LaunchDescription
-from launch.actions import IncludeLaunchDescription
+from launch.actions import IncludeLaunchDescription, DeclareLaunchArgument, AppendEnvironmentVariable
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch_ros.substitutions import FindPackageShare
-from launch.substitutions import PathJoinSubstitution
+from launch.substitutions import PathJoinSubstitution, LaunchConfiguration
 
 def generate_launch_description():
     # 1. 패키지 경로 찾기
@@ -17,9 +17,21 @@ def generate_launch_description():
     ])
 
     # 월드: 기본 empty.sdf에는 Sensors/Imu 시스템이 없어 카메라/IMU가 생성되지 않으므로 커스텀 월드 사용
+    # world:=rhphumanoid_basketball.sdf 처럼 worlds/ 안의 파일 이름으로 선택
+    world_arg = DeclareLaunchArgument(
+        "world",
+        default_value="rhphumanoid_empty.sdf",
+        description="World file name in rhphumanoid_gazebo/worlds"
+    )
     world_path = PathJoinSubstitution([
-        pkg_rhphumanoid_gazebo, "worlds", "rhphumanoid_empty.sdf"
+        pkg_rhphumanoid_gazebo, "worlds", LaunchConfiguration("world")
     ])
+
+    # 월드에서 model://ball_holder 같은 소품 모델을 찾을 수 있도록
+    set_model_path = AppendEnvironmentVariable(
+        name='GZ_SIM_RESOURCE_PATH',
+        value=PathJoinSubstitution([pkg_rhphumanoid_gazebo, "models"])
+    )
 
     # 3. Gazebo 실행 인수 설정
     # -r: 시뮬레이션 자동 실행
@@ -38,5 +50,7 @@ def generate_launch_description():
     )
 
     return LaunchDescription([
+        world_arg,
+        set_model_path,
         gazebo
     ])

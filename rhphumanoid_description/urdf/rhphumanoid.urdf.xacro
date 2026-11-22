@@ -6,6 +6,8 @@
   <xacro:arg name="serial_ports" default="auto" />
   <xacro:arg name="servo_read_mode" default="initial" />
   <xacro:arg name="servo_reads_per_cycle" default="0" />
+  <!-- Gazebo 에서 몸통을 공중에 고정 (모션 편집/확인용, 넘어지지 않음) -->
+  <xacro:arg name="fixed" default="false" />
 
   <xacro:include filename="$(find rhphumanoid_description)/urdf/rhphumanoid.visuals.xacro" />
   <xacro:include filename="$(find rhphumanoid_description)/urdf/rhphumanoid.inertia.xacro" />
@@ -22,6 +24,14 @@
   <xacro:include filename="$(find rhphumanoid_description)/ros2_control/rhphumanoid.ros2_control.xacro" />
 
   <link name="base_link"/>
+
+  <xacro:if value="$(arg fixed)">
+    <link name="world"/>
+    <joint name="world_to_base_joint" type="fixed">
+      <parent link="world"/>
+      <child link="base_link"/>
+    </joint>
+  </xacro:if>
 
   <joint name="base_to_body_joint" type="fixed">
     <parent link="base_link"/>

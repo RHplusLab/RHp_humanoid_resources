@@ -1,0 +1,31 @@
+<?xml version="1.0" ?>
+<!-- 공 지지대: 외경 6 cm, 내경 4.5 cm, 높이 3 cm (RHp_Arena_Obstacles/Ball Holder.ipt 에서 변환) -->
+<sdf version="1.6">
+  <model name="ball_holder">
+    <static>true</static>
+    <link name="link">
+      <!-- 충돌은 단순 원기둥으로 근사 (링 메시는 공과의 접촉 계산이 무거워 시뮬레이션이 크게 느려짐).
+           높이 2.2 cm: 공(반지름 3.5 cm)이 링(높이 3 cm, 내경 4.5 cm)에 얹힌 것과 같은 높이(중심 5.7 cm)가 되도록 -->
+      <collision name="collision">
+        <pose>0 0 0.011 0 0 0</pose>
+        <geometry>
+          <cylinder><radius>0.03</radius><length>0.022</length></cylinder>
+        </geometry>
+      </collision>
+      <!-- STL 은 mm 단위, Y 축이 위 -> 0.001 배, X 축으로 90도 회전 -->
+      <visual name="visual">
+        <pose>0 0 0 1.5708 0 0</pose>
+        <geometry>
+          <mesh>
+            <uri>model://ball_holder/meshes/ball_holder.stl</uri>
+            <scale>0.001 0.001 0.001</scale>
+          </mesh>
+        </geometry>
+        <material>
+          <ambient>0.1 0.6 0.2 1</ambient>
+          <diffuse>0.1 0.6 0.2 1</diffuse>
+        </material>
+      </visual>
+    </link>
+  </model>
+</sdf>
